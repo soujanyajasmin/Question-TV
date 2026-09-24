@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question TV</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <button class="menu-button">☰</button>
+        <h1>QUESTION TV</h1>
+    </header>
+
+    <!-- MAIN PAGE -->
+    <main class="main-container">
+
+        <!-- PREVIOUS MONTH -->
+        <aside class="previous-section">
+
+            <h2>Previous Month</h2>
+
+            <div class="previous-box">
+
+                <h3>August</h3>
+
+                <p>Previous month data</p>
+
+                <button>View Data</button>
+
+            </div>
+
+        </aside>
+
+        <!-- CURRENT DATA -->
+        <section class="current-section">
+
+            <h2>Current Day</h2>
+
+            <!-- BUCKETS -->
+            <div class="bucket-area">
+
+                <button class="arrow-button" id="previousButton">
+                    ←
+                </button>
+
+                <div class="buckets" id="buckets">
+
+                    <button class="bucket active" data-id="0">
+                        Question 1
+                    </button>
+
+                    <button class="bucket" data-id="1">
+                        Question 2
+                    </button>
+
+                    <button class="bucket" data-id="2">
+                        Question 3
+                    </button>
+
+                    <button class="bucket" data-id="3">
+                        Question 4
+                    </button>
+
+                    <button class="bucket" data-id="4">
+                        Question 5
+                    </button>
+
+                    <button class="bucket" data-id="4">
+                        Question 6
+                    </button>
+
+                    <button class="bucket" data-id="4">
+                        Question 7
+                    </button>
+
+                </div>
+
+                <button class="arrow-button" id="nextButton">
+                    →
+                </button>
+
+            </div>
+
+            <!-- SELECTED CONTENT -->
+            <div class="selected-content">
+
+                <h2 id="contentHeading">
+                    What is Artificial Intelligence?
+                </h2>
+
+                <div class="content-image">
+
+                    <img
+                        id="contentImage"
+                        src="https://images.pexels.com/photos/8566467/pexels-photo-8566467.jpeg"
+                        alt="Question image"
+                    >
+
+                </div>
+
+                <p id="contentDescription">
+                    Artificial Intelligence is a field of computer
+                    science that focuses on creating systems that
+                    can perform tasks that normally require human
+                    intelligence.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,243 @@
+/* =================================
+   BASIC SETTINGS
+================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    color: #222222;
+}
+
+
+/* =================================
+   HEADER
+================================= */
+
+.header {
+    height: 80px;
+    border: 2px solid #222222;
+    margin-left: 25px;
+    margin-right: 25px;
+    margin-top: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 24px;
+    color: #f02d2d;
+}
+
+.menu-button {
+    position: absolute;
+    left: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+
+/* =================================
+   MAIN CONTAINER
+================================= */
+
+.main-container {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
+    padding: 25px;
+    min-height: 600px;
+}
+
+/* =================================
+   PREVIOUS MONTH
+================================= */
+.previous-section {
+    border: 2px solid #222222;
+    padding: 20px;
+    text-align: center;
+}
+
+.previous-section h2 {
+    font-size: 18px;
+    margin-bottom: 25px;
+    color: #f02d2d;
+}
+
+.previous-box {
+    border: 2px solid #222222;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.previous-box h3 {
+    margin-bottom: 15px;
+}
+
+.previous-box p {
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.previous-box button {
+    padding: 10px 15px;
+    border: 1px solid #222222;
+    background-color: white;
+    cursor: pointer;
+}
+
+.previous-box button:hover {
+    background-color: #eeeeee;
+}
+
+/* =================================
+   CURRENT SECTION
+================================= */
+.current-section {
+    border: 2px solid #222222;
+    padding: 25px;
+    text-align: center;
+}
+
+.current-section > h2 {
+    margin-bottom: 25px;
+    font-size: 20px;
+    color: #f02d2d;
+}
+
+/* =================================
+   BUCKET AREA
+================================= */
+.bucket-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+}
+
+/* =================================
+   BUCKET CONTAINER
+================================= */
+.buckets {
+    width: 180px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 10px;
+}
+
+/* =================================
+   OVAL BUCKETS
+================================= */
+.bucket {
+    display: none;
+    width: 160px;
+    height: 70px;
+    flex-shrink: 0;
+    border: 2px solid #222222;
+    border-radius: 50%;
+    background-color: white;
+    cursor: pointer;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+}
+/* Only the active question is visible */
+.bucket.active {
+    display: flex;
+    background-color: #222222;
+    color: white;
+}
+
+/* =================================
+   ARROW BUTTONS
+================================= */
+.arrow-button {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #222222;
+    border-radius: 50%;
+    background-color: white;
+    cursor: pointer;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.arrow-button:hover {
+    background-color: #eeeeee;
+}
+
+/* =================================
+   SELECTED CONTENT
+================================= */
+.selected-content {
+    margin-top: 30px;
+    border: 2px solid #222222;
+    padding: 25px;
+    min-height: 350px;
+}
+
+.selected-content h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    color: #f02d2d;
+}
+
+/* =================================
+   IMAGE
+================================= */
+.content-image img {
+    width: 100%;
+    max-width: 400px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* =================================
+   DESCRIPTION
+================================= */
+.selected-content p {
+    max-width: 700px;
+    margin: auto;
+    line-height: 1.6;
+    font-size: 16px;
+    color: #222222;
+}
+
+/* =================================
+   RESPONSIVE DESIGN
+================================= */
+@media (max-width: 900px) {
+    
+    .main-container {
+        grid-template-columns: 1fr;
+    }
+
+    .previous-section {
+        min-height: 200px;
+    }
+
+    .bucket {
+        width: 150px;
+
+        height: 65px;
+    }
+
+    .buckets {
+        width: 170px;
+    }
+}
