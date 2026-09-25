@@ -1,129 +1,139 @@
-// =================================
-// QUESTION DATA
-// =================================
+// API URL
+const API_URL = "http://127.0.0.1:8000/questions";
 
-const questions = [
-    {
-        title: "What is Artificial Intelligence?",
-        image: "https://images.pexels.com/photos/8566467/pexels-photo-8566467.jpeg",
-        description:
-            "Artificial Intelligence is a field of computer science that focuses on creating systems that can perform tasks that normally require human intelligence."
-    },
-
-    {
-        title: "What is Machine Learning?",
-        image: "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",
-        description:
-            "Machine Learning is a part of Artificial Intelligence that allows computers to learn from data and make predictions or decisions."
-    },
-
-    {
-        title: "What is Cloud Computing?",
-        image: "https://images.pexels.com/photos/1181675/pexels-photo-1181675.jpeg",
-        description:
-            "Cloud Computing allows users to store data and use computing services through the internet."
-    },
-
-    {
-        title: "What is Internet of Things?",
-        image: "https://images.pexels.com/photos/325229/pexels-photo-325229.jpeg",
-        description:
-            "The Internet of Things connects physical devices to the internet so that they can collect and exchange data."
-    },
-
-    {
-        title: "What is Cyber Security?",
-        image: "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg",
-        description:
-            "Cyber Security is the practice of protecting computers, networks, applications, and data from cyber attacks."
-    }
-];
-
-
-// =================================
-// GET ELEMENTS
-// =================================
-
+// Get HTML elements
 const buckets = document.querySelectorAll(".bucket");
 
-const contentHeading =
-    document.getElementById("contentHeading");
+const contentHeading = document.getElementById("contentHeading");
+const contentImage = document.getElementById("contentImage");
+const contentDescription = document.getElementById("contentDescription");
 
-const contentImage =
-    document.getElementById("contentImage");
+const nextButton = document.getElementById("nextButton");
+const previousButton = document.getElementById("previousButton");
 
-const contentDescription =
-    document.getElementById("contentDescription");
+// Store questions
+let questions = [];
 
-const nextButton =
-    document.getElementById("nextButton");
-
-const previousButton =
-    document.getElementById("previousButton");
-
-
-// =================================
-// CURRENT QUESTION
-// =================================
-
+// Current question
 let currentQuestion = 0;
 
 
-// =================================
+// =====================================
+// LOAD QUESTIONS FROM FASTAPI
+// =====================================
+
+async function loadQuestions() {
+
+    try {
+
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error("API error");
+        }
+
+        questions = await response.json();
+
+        console.log("Questions loaded:", questions);
+
+        // Show first question
+        showQuestion(0);
+
+    } catch (error) {
+
+        console.error("Error loading questions:", error);
+
+        contentHeading.textContent = "Unable to load questions";
+
+        contentDescription.textContent =
+            "Please make sure FastAPI is running.";
+
+    }
+}
+
+// =====================================
 // SHOW QUESTION
-// =================================
+// =====================================
 
 function showQuestion(index) {
 
+    if (questions.length === 0) {
+        return;
+    }
+
+    if (index < 0 || index >= questions.length) {
+        return;
+    }
+
     currentQuestion = index;
 
-    // Remove active from all questions
+    const question = questions[index];
+
+    // Remove active from all buckets
     buckets.forEach(function(bucket) {
         bucket.classList.remove("active");
     });
 
-    // Make selected question active
+    // Activate current bucket
     buckets[index].classList.add("active");
+
+    // Change bucket text
+    buckets[index].textContent =
+        "Question " + question.question_number;
 
     // Change heading
     contentHeading.textContent =
-        questions[index].title;
+        question.title;
 
     // Change image
     contentImage.src =
-        questions[index].image;
+        question.image;
 
     // Change description
     contentDescription.textContent =
-        questions[index].description;
+        question.description;
+
+    console.log("Showing question:", index + 1);
 }
 
+// =====================================
+// RIGHT ARROW
+// =====================================
 
-// =================================
-// NEXT BUTTON
-// =================================
+nextButton.onclick = function() {
 
-nextButton.addEventListener("click", function() {
+    console.log("Right arrow clicked");
 
     if (currentQuestion < questions.length - 1) {
 
-        showQuestion(currentQuestion + 1);
+        currentQuestion++;
+
+        showQuestion(currentQuestion);
 
     }
 
-});
+};
 
+// =====================================
+// LEFT ARROW
+// =====================================
 
-// =================================
-// PREVIOUS BUTTON
-// =================================
+previousButton.onclick = function() {
 
-previousButton.addEventListener("click", function() {
+    console.log("Left arrow clicked");
 
     if (currentQuestion > 0) {
 
-        showQuestion(currentQuestion - 1);
+        currentQuestion--;
+
+        showQuestion(currentQuestion);
 
     }
 
-});
+};
+
+// =====================================
+// START
+// =====================================
+
+loadQuestions();
