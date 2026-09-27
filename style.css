@@ -14,7 +14,6 @@ body {
     color: #222222;
 }
 
-
 /* =================================
    HEADER
 ================================= */
@@ -22,9 +21,7 @@ body {
 .header {
     height: 80px;
     border: 2px solid #222222;
-    margin-left: 25px;
-    margin-right: 25px;
-    margin-top: 25px;
+    margin: 25px 25px 0 25px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -45,7 +42,6 @@ body {
     cursor: pointer;
 }
 
-
 /* =================================
    MAIN CONTAINER
 ================================= */
@@ -61,6 +57,7 @@ body {
 /* =================================
    PREVIOUS MONTH
 ================================= */
+
 .previous-section {
     border: 2px solid #222222;
     padding: 20px;
@@ -102,6 +99,7 @@ body {
 /* =================================
    CURRENT SECTION
 ================================= */
+
 .current-section {
     border: 2px solid #222222;
     padding: 25px;
@@ -117,6 +115,7 @@ body {
 /* =================================
    BUCKET AREA
 ================================= */
+
 .bucket-area {
     display: flex;
     align-items: center;
@@ -126,44 +125,28 @@ body {
 }
 
 /* =================================
-   BUCKET CONTAINER
+   SINGLE OVAL BUCKET
 ================================= */
-.buckets {
-    width: 180px;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    padding: 10px;
-}
 
-/* =================================
-   OVAL BUCKETS
-================================= */
 .bucket {
-    display: none;
+    display: flex;
     width: 160px;
     height: 70px;
-    flex-shrink: 0;
     border: 2px solid #222222;
-    border-radius: 50%;
-    background-color: white;
-    cursor: pointer;
-    font-size: 14px;
-    align-items: center;
-    justify-content: center;
-}
-/* Only the active question is visible */
-.bucket.active {
-    display: flex;
+    border-radius: 50px;
     background-color: #222222;
     color: white;
+    font-weight: bold;
+    font-size: 15px;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
 }
 
 /* =================================
    ARROW BUTTONS
 ================================= */
+
 .arrow-button {
     width: 40px;
     height: 40px;
@@ -173,15 +156,24 @@ body {
     cursor: pointer;
     font-size: 20px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .arrow-button:hover {
     background-color: #eeeeee;
 }
 
+.arrow-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
 /* =================================
    SELECTED CONTENT
 ================================= */
+
 .selected-content {
     margin-top: 30px;
     border: 2px solid #222222;
@@ -198,6 +190,7 @@ body {
 /* =================================
    IMAGE
 ================================= */
+
 .content-image img {
     width: 100%;
     max-width: 400px;
@@ -210,6 +203,7 @@ body {
 /* =================================
    DESCRIPTION
 ================================= */
+
 .selected-content p {
     max-width: 700px;
     margin: auto;
@@ -221,8 +215,8 @@ body {
 /* =================================
    RESPONSIVE DESIGN
 ================================= */
+
 @media (max-width: 900px) {
-    
     .main-container {
         grid-template-columns: 1fr;
     }
@@ -232,12 +226,7 @@ body {
     }
 
     .bucket {
-        width: 150px;
-
-        height: 65px;
-    }
-
-    .buckets {
-        width: 170px;
+        width: 140px;
+        height: 60px;
     }
 }

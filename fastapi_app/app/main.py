@@ -1,28 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from .database.models import create_questions_table
-from .routers.questions import router as questions_router
-
+from app.routers import questions
 
 app = FastAPI()
 
+# Allow requests from Live Server (port 5500)
+origins = [
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+]
 
-# Allow frontend to communicate with FastAPI
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-create_questions_table()
-
-app.include_router(questions_router)
-
-
-@app.get("/")
-def home():
-    return {"message": "Question TV API is running"}
+app.include_router(questions.router)

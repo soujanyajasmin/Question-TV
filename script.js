@@ -1,139 +1,186 @@
-// API URL
+// =====================================
+// API CONFIGURATION
+// =====================================
 const API_URL = "http://127.0.0.1:8000/questions";
 
-// Get HTML elements
-const buckets = document.querySelectorAll(".bucket");
-
+// =====================================
+// DOM ELEMENTS
+// =====================================
+const activeBucket = document.getElementById("activeBucket");
 const contentHeading = document.getElementById("contentHeading");
 const contentImage = document.getElementById("contentImage");
 const contentDescription = document.getElementById("contentDescription");
-
 const nextButton = document.getElementById("nextButton");
 const previousButton = document.getElementById("previousButton");
+const previousMonthButton = document.getElementById("previousMonthButton");
+const previousMonthText = document.getElementById("previousMonthText");
+const sectionTitle = document.getElementById("sectionTitle");
 
-// Store questions
+// =====================================
+// STATE MANAGEMENT
+// =====================================
 let questions = [];
-
-// Current question
-let currentQuestion = 0;
-
+let currentIndex = 0;
 
 // =====================================
-// LOAD QUESTIONS FROM FASTAPI
+// FETCH DATA FROM FASTAPI
 // =====================================
-
 async function loadQuestions() {
-
     try {
-
         const response = await fetch(API_URL);
 
         if (!response.ok) {
-            throw new Error("API error");
+            throw new Error("Failed to fetch questions from API");
         }
 
         questions = await response.json();
 
-        console.log("Questions loaded:", questions);
-
-        // Show first question
-        showQuestion(0);
-
+        if (Array.isArray(questions) && questions.length > 0) {
+            currentIndex = 0;
+            displayCurrentQuestion();
+        }
     } catch (error) {
-
         console.error("Error loading questions:", error);
-
         contentHeading.textContent = "Unable to load questions";
-
-        contentDescription.textContent =
-            "Please make sure FastAPI is running.";
-
+        contentDescription.textContent = "Please ensure your FastAPI backend is running on http://127.0.0.1:8000.";
     }
 }
 
 // =====================================
-// SHOW QUESTION
+// UPDATE DISPLAYED QUESTION
 // =====================================
+function displayCurrentQuestion() {
+    if (questions.length === 0) return;
 
-function showQuestion(index) {
+    const current = questions[currentIndex];
 
-    if (questions.length === 0) {
-        return;
-    }
+    // Update Oval Button Text (e.g., Question 1, Question 2 ... Question 10)
+    const num = current.question_number || (currentIndex + 1);
+    activeBucket.textContent = `Question ${num}`;
 
-    if (index < 0 || index >= questions.length) {
-        return;
-    }
+    // Update Title, Image, and Description
+    contentHeading.textContent = current.title || `Question ${num}`;
+    contentImage.src = current.image || "";
+    contentImage.alt = current.title || "Question image";
+    contentDescription.textContent = current.description || "";
+}
 
-    currentQuestion = index;
+// =====================================
+// NAVIGATION HANDLERS
+// =====================================
+if (nextButton) {
+    nextButton.addEventListener("click", () => {
+        if (questions.length === 0) return;
 
-    const question = questions[index];
-
-    // Remove active from all buckets
-    buckets.forEach(function(bucket) {
-        bucket.classList.remove("active");
+        // Advance to next item, looping back to start when reaching the end
+        currentIndex = (currentIndex + 1) % questions.length;
+        displayCurrentQuestion();
     });
-
-    // Activate current bucket
-    buckets[index].classList.add("active");
-
-    // Change bucket text
-    buckets[index].textContent =
-        "Question " + question.question_number;
-
-    // Change heading
-    contentHeading.textContent =
-        question.title;
-
-    // Change image
-    contentImage.src =
-        question.image;
-
-    // Change description
-    contentDescription.textContent =
-        question.description;
-
-    console.log("Showing question:", index + 1);
 }
 
-// =====================================
-// RIGHT ARROW
-// =====================================
+if (previousButton) {
+    previousButton.addEventListener("click", () => {
+        if (questions.length === 0) return;
 
-nextButton.onclick = function() {
+        // Move to previous item, wrapping to the end if at start
+        currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+        displayCurrentQuestion();
+    });
+}
 
-    console.log("Right arrow clicked");
-
-    if (currentQuestion < questions.length - 1) {
-
-        currentQuestion++;
-
-        showQuestion(currentQuestion);
-
-    }
-
-};
-
-// =====================================
-// LEFT ARROW
-// =====================================
-
-previousButton.onclick = function() {
-
-    console.log("Left arrow clicked");
-
-    if (currentQuestion > 0) {
-
-        currentQuestion--;
-
-        showQuestion(currentQuestion);
-
-    }
-
-};
-
-// =====================================
-// START
-// =====================================
-
+// Initialize on page load
 loadQuestions();
+
+// =====================================
+// PREVIOUS MONTH
+// =====================================
+
+let previousMonthQuestions = [];
+let previousMonthIndex = 0;
+
+if (previousMonthButton) {
+
+    previousMonthButton.addEventListener("click", async function() {
+
+        try {
+
+            const response =
+                await fetch("http://127.0.0.1:8000/questions/previous-month");
+
+            if (!response.ok) {
+                throw new Error("Previous month API error");
+            }
+
+            previousMonthQuestions = await response.json();
+
+            console.log(
+                "Previous month questions:",
+                previousMonthQuestions
+            );
+
+            if (previousMonthQuestions.length === 0) {
+
+                previousMonthText.textContent =
+                    "No previous month data found.";
+
+                return;
+            }
+
+            previousMonthText.textContent =
+                previousMonthQuestions.length +
+                " questions available";
+
+            // Change section title
+            sectionTitle.textContent =
+                "Previous Month - August";
+
+            // Start from Question 1
+            previousMonthIndex = 0;
+
+            // Display first August question
+            displayPreviousMonthQuestion();
+
+        } catch (error) {
+
+            console.error(
+                "Error loading previous month data:",
+                error
+            );
+
+            previousMonthText.textContent =
+                "Unable to load previous month data.";
+        }
+
+    });
+}
+
+function displayPreviousMonthQuestion() {
+
+    if (previousMonthQuestions.length === 0) {
+        return;
+    }
+
+    const current =
+        previousMonthQuestions[previousMonthIndex];
+
+    const num =
+        current.question_number ||
+        (previousMonthIndex + 1);
+
+    activeBucket.textContent =
+        `Question ${num}`;
+
+    contentHeading.textContent =
+        current.title ||
+        `Question ${num}`;
+
+    contentImage.src =
+        current.image || "";
+
+    contentImage.alt =
+        current.title ||
+        "Question image";
+
+    contentDescription.textContent =
+        current.description || "";
+}
