@@ -1,11 +1,14 @@
 // =====================================
 // API CONFIGURATION
 // =====================================
+
 const API_URL = "http://127.0.0.1:8000/questions";
+const PREVIOUS_MONTH_API_URL = "http://127.0.0.1:8000/questions/previous-month";
 
 // =====================================
 // DOM ELEMENTS
 // =====================================
+
 const activeBucket = document.getElementById("activeBucket");
 const contentHeading = document.getElementById("contentHeading");
 const contentImage = document.getElementById("contentImage");
@@ -15,172 +18,315 @@ const previousButton = document.getElementById("previousButton");
 const previousMonthButton = document.getElementById("previousMonthButton");
 const previousMonthText = document.getElementById("previousMonthText");
 const sectionTitle = document.getElementById("sectionTitle");
+const currentDayButton = document.getElementById("currentDayButton");
+const addQuestionForm = document.getElementById("addQuestionForm");
+const deleteQuestionButton = document.getElementById("deleteQuestionButton");
+const questionCounter = document.getElementById("questionCounter");
+
+// Set default form date to today
+const qDateInput = document.getElementById("qDate");
+if (qDateInput) {
+    qDateInput.value = new Date().toISOString().split("T")[0];
+}
 
 // =====================================
 // STATE MANAGEMENT
 // =====================================
+
 let questions = [];
+let previousQuestions = [];
 let currentIndex = 0;
+let previousIndex = 0;
+let viewingPreviousMonth = false;
 
 // =====================================
-// FETCH DATA FROM FASTAPI
+// GET PREVIOUS MONTH NAME
 // =====================================
+
+function getPreviousMonthName() {
+    const today = new Date();
+    let year = today.getFullYear();
+    let month = today.getMonth();
+
+    if (month === 0) {
+        year--;
+        month = 11;
+    } else {
+        month--;
+    }
+
+    return new Date(year, month, 1).toLocaleString("en-US", { month: "long" });
+}
+
+// =====================================
+// FETCH CURRENT DAY QUESTIONS
+// =====================================
+
 async function loadQuestions() {
     try {
         const response = await fetch(API_URL);
 
         if (!response.ok) {
-            throw new Error("Failed to fetch questions from API");
+            throw new Error("Failed to fetch current questions");
         }
 
         questions = await response.json();
+        console.log("Current questions:", questions);
 
         if (Array.isArray(questions) && questions.length > 0) {
             currentIndex = 0;
             displayCurrentQuestion();
+        } else if (contentHeading && contentDescription) {
+            contentHeading.textContent = "No questions found";
+            contentDescription.textContent = "No questions available for today.";
+            if (contentImage) contentImage.src = "";
+            if (activeBucket) activeBucket.textContent = "Question 0";
+            if (questionCounter) questionCounter.textContent = "";
         }
     } catch (error) {
-        console.error("Error loading questions:", error);
-        contentHeading.textContent = "Unable to load questions";
-        contentDescription.textContent = "Please ensure your FastAPI backend is running on http://127.0.0.1:8000.";
+        console.error("Error loading current questions:", error);
+        if (contentHeading && contentDescription) {
+            contentHeading.textContent = "Unable to load questions";
+            contentDescription.textContent = "Please make sure FastAPI is running on http://127.0.0.1:8000";
+        }
     }
 }
 
 // =====================================
-// UPDATE DISPLAYED QUESTION
+// DISPLAY CURRENT DAY QUESTION
 // =====================================
+
 function displayCurrentQuestion() {
-    if (questions.length === 0) return;
+    if (questions.length === 0) {
+        if (questionCounter) questionCounter.textContent = "";
+        return;
+    }
 
     const current = questions[currentIndex];
-
-    // Update Oval Button Text (e.g., Question 1, Question 2 ... Question 10)
     const num = current.question_number || (currentIndex + 1);
-    activeBucket.textContent = `Question ${num}`;
 
-    // Update Title, Image, and Description
-    contentHeading.textContent = current.title || `Question ${num}`;
-    contentImage.src = current.image || "";
-    contentImage.alt = current.title || "Question image";
-    contentDescription.textContent = current.description || "";
+    if (activeBucket) activeBucket.textContent = `Question ${num}`;
+    if (contentHeading) contentHeading.textContent = current.title || `Question ${num}`;
+    if (contentImage) {
+        contentImage.src = current.image || "";
+        contentImage.alt = current.title || "Question image";
+    }
+    if (contentDescription) contentDescription.textContent = current.description || "";
+
+    if (questionCounter) {
+        questionCounter.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+    }
 }
 
 // =====================================
-// NAVIGATION HANDLERS
+// DISPLAY PREVIOUS MONTH QUESTION
 // =====================================
-if (nextButton) {
-    nextButton.addEventListener("click", () => {
-        if (questions.length === 0) return;
 
-        // Advance to next item, looping back to start when reaching the end
+function displayPreviousMonthQuestion() {
+    if (previousQuestions.length === 0) {
+        if (questionCounter) questionCounter.textContent = "";
+        return;
+    }
+
+    const current = previousQuestions[previousIndex];
+    const num = current.question_number || (previousIndex + 1);
+
+    if (activeBucket) activeBucket.textContent = `Question ${num}`;
+    if (contentHeading) contentHeading.textContent = current.title || `Question ${num}`;
+    if (contentImage) {
+        contentImage.src = current.image || "";
+        contentImage.alt = current.title || "Question image";
+    }
+    if (contentDescription) contentDescription.textContent = current.description || "";
+
+    if (questionCounter) {
+        questionCounter.textContent = `Question ${previousIndex + 1} of ${previousQuestions.length}`;
+    }
+}
+
+// =====================================
+// NEXT BUTTON
+// =====================================
+
+if (nextButton) {
+    nextButton.addEventListener("click", function () {
+        if (viewingPreviousMonth) {
+            if (previousQuestions.length === 0) return;
+            previousIndex = (previousIndex + 1) % previousQuestions.length;
+            displayPreviousMonthQuestion();
+            return;
+        }
+
+        if (questions.length === 0) return;
         currentIndex = (currentIndex + 1) % questions.length;
         displayCurrentQuestion();
     });
 }
 
-if (previousButton) {
-    previousButton.addEventListener("click", () => {
-        if (questions.length === 0) return;
+// =====================================
+// PREVIOUS BUTTON
+// =====================================
 
-        // Move to previous item, wrapping to the end if at start
+if (previousButton) {
+    previousButton.addEventListener("click", function () {
+        if (viewingPreviousMonth) {
+            if (previousQuestions.length === 0) return;
+            previousIndex = (previousIndex - 1 + previousQuestions.length) % previousQuestions.length;
+            displayPreviousMonthQuestion();
+            return;
+        }
+
+        if (questions.length === 0) return;
         currentIndex = (currentIndex - 1 + questions.length) % questions.length;
         displayCurrentQuestion();
     });
 }
 
-// Initialize on page load
-loadQuestions();
-
 // =====================================
 // PREVIOUS MONTH
 // =====================================
 
-let previousMonthQuestions = [];
-let previousMonthIndex = 0;
-
 if (previousMonthButton) {
-
-    previousMonthButton.addEventListener("click", async function() {
-
+    previousMonthButton.addEventListener("click", async function () {
         try {
-
-            const response =
-                await fetch("http://127.0.0.1:8000/questions/previous-month");
+            const response = await fetch(PREVIOUS_MONTH_API_URL);
 
             if (!response.ok) {
                 throw new Error("Previous month API error");
             }
 
-            previousMonthQuestions = await response.json();
+            previousQuestions = await response.json();
+            console.log("Previous month questions:", previousQuestions);
 
-            console.log(
-                "Previous month questions:",
-                previousMonthQuestions
-            );
-
-            if (previousMonthQuestions.length === 0) {
-
-                previousMonthText.textContent =
-                    "No previous month data found.";
-
+            if (previousQuestions.length === 0) {
+                if (previousMonthText) previousMonthText.textContent = "No previous month data found.";
                 return;
             }
 
-            previousMonthText.textContent =
-                previousMonthQuestions.length +
-                " questions available";
+            viewingPreviousMonth = true;
+            previousIndex = 0;
 
-            // Change section title
-            sectionTitle.textContent =
-                "Previous Month - August";
+            const monthName = getPreviousMonthName();
 
-            // Start from Question 1
-            previousMonthIndex = 0;
+            if (sectionTitle) sectionTitle.textContent = `Previous Month - ${monthName}`;
+            if (currentDayButton) currentDayButton.style.display = "inline-block";
+            if (previousMonthText) previousMonthText.textContent = `${previousQuestions.length} questions available`;
 
-            // Display first August question
             displayPreviousMonthQuestion();
-
         } catch (error) {
-
-            console.error(
-                "Error loading previous month data:",
-                error
-            );
-
-            previousMonthText.textContent =
-                "Unable to load previous month data.";
+            console.error("Error loading previous month data:", error);
+            if (previousMonthText) previousMonthText.textContent = "Unable to load previous month data.";
         }
-
     });
 }
 
-function displayPreviousMonthQuestion() {
+// =====================================
+// RETURN TO CURRENT DAY
+// =====================================
 
-    if (previousMonthQuestions.length === 0) {
-        return;
-    }
+if (currentDayButton) {
+    currentDayButton.addEventListener("click", function () {
+        viewingPreviousMonth = false;
+        currentIndex = 0;
 
-    const current =
-        previousMonthQuestions[previousMonthIndex];
+        if (sectionTitle) sectionTitle.textContent = "Current Day";
+        currentDayButton.style.display = "none";
 
-    const num =
-        current.question_number ||
-        (previousMonthIndex + 1);
-
-    activeBucket.textContent =
-        `Question ${num}`;
-
-    contentHeading.textContent =
-        current.title ||
-        `Question ${num}`;
-
-    contentImage.src =
-        current.image || "";
-
-    contentImage.alt =
-        current.title ||
-        "Question image";
-
-    contentDescription.textContent =
-        current.description || "";
+        displayCurrentQuestion();
+    });
 }
+
+// =====================================
+// CREATE QUESTION (POST)
+// =====================================
+
+if (addQuestionForm) {
+    addQuestionForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const payload = {
+            date: document.getElementById("qDate").value,
+            question_number: parseInt(document.getElementById("qNumber").value),
+            title: document.getElementById("qTitle").value,
+            image: document.getElementById("qImage").value,
+            description: document.getElementById("qDescription").value
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to create question");
+            }
+
+            alert("Question added successfully!");
+            addQuestionForm.reset();
+            if (qDateInput) qDateInput.value = new Date().toISOString().split("T")[0];
+
+            if (!viewingPreviousMonth) {
+                await loadQuestions();
+            }
+        } catch (error) {
+            console.error("Error creating question:", error);
+            alert("Failed to create question.");
+        }
+    });
+}
+
+// =====================================
+// DELETE QUESTION (DELETE)
+// =====================================
+
+if (deleteQuestionButton) {
+    deleteQuestionButton.addEventListener("click", async function () {
+        const targetList = viewingPreviousMonth ? previousQuestions : questions;
+        const targetIndex = viewingPreviousMonth ? previousIndex : currentIndex;
+
+        if (targetList.length === 0) return;
+
+        const currentQuestion = targetList[targetIndex];
+        const confirmDelete = confirm(`Are you sure you want to delete "${currentQuestion.title}"?`);
+
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(`${API_URL}/${currentQuestion.id}`, {
+                method: "DELETE"
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete question");
+            }
+
+            alert("Question deleted successfully!");
+
+            if (viewingPreviousMonth) {
+                const prevResponse = await fetch(PREVIOUS_MONTH_API_URL);
+                previousQuestions = await prevResponse.json();
+                previousIndex = 0;
+                if (previousQuestions.length > 0) {
+                    displayPreviousMonthQuestion();
+                } else {
+                    if (contentHeading) contentHeading.textContent = "No previous month questions remaining.";
+                    if (questionCounter) questionCounter.textContent = "";
+                }
+            } else {
+                await loadQuestions();
+            }
+        } catch (error) {
+            console.error("Error deleting question:", error);
+            alert("Failed to delete question.");
+        }
+    });
+}
+
+// =====================================
+// INITIALIZE PAGE
+// =====================================
+
+if (currentDayButton) currentDayButton.style.display = "none";
+loadQuestions();

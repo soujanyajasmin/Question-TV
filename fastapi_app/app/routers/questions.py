@@ -1,15 +1,26 @@
-from fastapi import APIRouter
-from ..database.database import get_connection
+from datetime import date
+from typing import List
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from app.database.database import get_connection
 
 router = APIRouter()
 
 
+class QuestionSchema(BaseModel):
+    date: str
+    question_number: int
+    title: str
+    image: str
+    description: str
+
+
 @router.get("/questions")
 def get_questions():
-
     connection = get_connection()
-
     cursor = connection.cursor()
+
+    current_date = date.today().strftime("%Y-%m-%d")
 
     cursor.execute("""
         SELECT
@@ -20,15 +31,14 @@ def get_questions():
             image,
             description
         FROM questions
+        WHERE date = ?
         ORDER BY question_number
-    """)
+    """, (current_date,))
 
     questions = cursor.fetchall()
-
     connection.close()
 
     result = []
-
     for question in questions:
         result.append({
             "id": question["id"],
@@ -40,13 +50,24 @@ def get_questions():
         })
 
     return result
+
 
 @router.get("/questions/previous-month")
 def get_previous_month_questions():
-
     connection = get_connection()
-
     cursor = connection.cursor()
+
+    current_year = date.today().year
+    current_month = date.today().month
+
+    if current_month == 1:
+        previous_year = current_year - 1
+        previous_month = 12
+    else:
+        previous_year = current_year
+        previous_month = current_month - 1
+
+    previous_month_string = f"{previous_year:04d}-{previous_month:02d}"
 
     cursor.execute("""
         SELECT
@@ -57,16 +78,14 @@ def get_previous_month_questions():
             image,
             description
         FROM questions
-        WHERE date LIKE '2026-08%'
+        WHERE date LIKE ?
         ORDER BY question_number
-    """)
+    """, (previous_month_string + "%",))
 
     questions = cursor.fetchall()
-
     connection.close()
 
     result = []
-
     for question in questions:
         result.append({
             "id": question["id"],
@@ -78,3 +97,36 @@ def get_previous_month_questions():
         })
 
     return result
+
+
+@router.post("/questions")
+def create_question(payload: QuestionSchema):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO questions (date, question_number, title, image, description)
+        VALUES (?, ?, ?, ?, ?)
+    """, (payload.date, payload.question_number, payload.title, payload.image, payload.description))
+
+    connection.commit()
+    new_id = cursor.lastrowid
+    connection.close()
+
+    return {"message": "Question created successfully", "id": new_id}
+
+
+@router.delete("/questions/{question_id}")
+def delete_question(question_id: int):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM questions WHERE id = ?", (question_id,))
+    connection.commit()
+    rows_affected = cursor.rowcount
+    connection.close()
+
+    if rows_affected == 0:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    return {"message": "Question deleted successfully"}

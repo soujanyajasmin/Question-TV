@@ -132,6 +132,12 @@ def insert_previous_month_questions():
 
     cursor = connection.cursor()
 
+    # Remove existing previous month questions
+    cursor.execute("""
+        DELETE FROM questions
+        WHERE date LIKE '2026-08%'
+    """)
+
     questions = [
 
         (
@@ -181,6 +187,34 @@ def insert_previous_month_questions():
         (date, question_number, title, image, description)
         VALUES (?, ?, ?, ?, ?)
     """, questions)
+
+    connection.commit()
+
+    connection.close()
+
+def insert_question(
+    date,
+    question_number,
+    title,
+    image,
+    description
+):
+
+    connection = get_connection()
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        INSERT INTO questions
+        (date, question_number, title, image, description)
+        VALUES (?, ?, ?, ?, ?)
+    """, (
+        date,
+        question_number,
+        title,
+        image,
+        description
+    ))
 
     connection.commit()
 

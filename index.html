@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question TV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,40 +15,51 @@
 
     <!-- HEADER -->
     <header class="header">
-        <button class="menu-button">☰</button>
-        <h1>QUESTION TV</h1>
+        <button class="menu-button" aria-label="Toggle Menu">☰</button>
+        <div class="logo">
+            <span class="logo-icon">📺</span>
+            <h1>QUESTION TV</h1>
+        </div>
     </header>
 
     <!-- MAIN PAGE -->
     <main class="main-container">
 
         <!-- PREVIOUS MONTH -->
-        <aside class="previous-section">
-            <h2>Previous Month</h2>
+        <aside class="previous-section card">
+            <h2>Archive</h2>
             <div class="previous-box">
-                <h3>August</h3>
+                <h3 id="previousMonthName">Previous Month</h3>
                 <p id="previousMonthText">Previous month data</p>
-                <button id="previousMonthButton">View Data</button>
+                <button id="previousMonthButton" class="btn btn-secondary">View Data</button>
             </div>
         </aside>
 
         <!-- CURRENT DATA -->
-        <section class="current-section">
-            <h2 id="sectionTitle">Current Day</h2>
+        <section class="current-section card">
+            <div class="section-header">
+                <h2 id="sectionTitle">Current Day</h2>
+                <button id="currentDayButton" class="btn btn-outline current-day-button">Current Day</button>
+            </div>
 
-            <!-- BUCKETS NAVIGATION (Single Oval Display) -->
+            <!-- BUCKETS NAVIGATION -->
             <div class="bucket-area">
-                <button class="arrow-button" id="previousButton">←</button>
+                <button class="arrow-button" id="previousButton" aria-label="Previous Question">←</button>
 
                 <div class="bucket active" id="activeBucket">
                     Question 1
                 </div>
 
-                <button class="arrow-button" id="nextButton">→</button>
+                <button class="arrow-button" id="nextButton" aria-label="Next Question">→</button>
+            </div>
+
+            <!-- QUESTION COUNTER -->
+            <div id="questionCounter" class="question-counter">
+                Question 1 of 10
             </div>
 
             <!-- SELECTED CONTENT -->
-            <div class="selected-content">
+            <article class="selected-content">
                 <h2 id="contentHeading">Artificial Intelligence</h2>
 
                 <div class="content-image">
@@ -55,6 +69,48 @@
                 <p id="contentDescription">
                     Artificial Intelligence is a field of computer science that focuses on creating systems that can perform tasks that normally require human intelligence.
                 </p>
+
+                <div class="action-bar">
+                    <button id="deleteQuestionButton" class="btn btn-danger">
+                        Delete Question
+                    </button>
+                </div>
+            </article>
+
+            <!-- ADMIN ADD QUESTION FORM -->
+            <div class="admin-section">
+                <h3>Add New Question</h3>
+                <form id="addQuestionForm" class="add-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="qDate">Date</label>
+                            <input type="date" id="qDate" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="qNumber">Question Number</label>
+                            <input type="number" id="qNumber" placeholder="e.g. 1" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qTitle">Title</label>
+                        <input type="text" id="qTitle" placeholder="Enter title" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qImage">Image URL</label>
+                        <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qDescription">Description</label>
+                        <textarea id="qDescription" placeholder="Enter detailed description..." rows="4" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Submit Question
+                    </button>
+                </form>
             </div>
 
         </section>
