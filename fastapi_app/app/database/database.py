@@ -38,7 +38,6 @@ def insert_sample_questions():
     cursor = connection.cursor()
 
     today_str = date.today().strftime("%Y-%m-%d")
-    cursor.execute("DELETE FROM questions WHERE date = ?", (today_str,))
 
     # 10 Questions for the Current Day
     questions = [
@@ -134,8 +133,6 @@ def insert_previous_month_questions():
     prev_month_str = last_day_prev_month.strftime("%Y-%m")
     sample_date = f"{prev_month_str}-15"
 
-    cursor.execute("DELETE FROM questions WHERE date LIKE ?", (prev_month_str + "%",))
-
     # 5 Questions for the Previous Month
     questions = [
         (
@@ -187,5 +184,14 @@ def insert_previous_month_questions():
 
 def init_db():
     create_questions_table()
-    insert_sample_questions()
-    insert_previous_month_questions()
+    
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM questions")
+    count = cursor.fetchone()[0]
+    connection.close()
+
+    # ONLY seed sample questions if database is completely empty
+    if count == 0:
+        insert_sample_questions()
+        insert_previous_month_questions()

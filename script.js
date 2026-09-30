@@ -2,8 +2,15 @@
 // API CONFIGURATION
 // =====================================
 
-const API_URL = "http://127.0.0.1:8000/questions";
-const PREVIOUS_MONTH_API_URL = "http://127.0.0.1:8000/questions/previous-month";
+// Automatically uses your production backend when deployed, or fallback to localhost during local testing
+const PROD_BACKEND_URL = "https://your-backend-service.onrender.com"; // Replace with your deployed backend URL
+
+const BASE_URL = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
+    ? "http://127.0.0.1:8000"
+    : PROD_BACKEND_URL;
+
+const API_URL = `${BASE_URL}/questions`;
+const PREVIOUS_MONTH_API_URL = `${BASE_URL}/questions/previous-month`;
 
 // =====================================
 // DOM ELEMENTS
@@ -23,8 +30,10 @@ const addQuestionForm = document.getElementById("addQuestionForm");
 const deleteQuestionButton = document.getElementById("deleteQuestionButton");
 const questionCounter = document.getElementById("questionCounter");
 
-// Set default form date to today
 const qDateInput = document.getElementById("qDate");
+const qNumberInput = document.getElementById("qNumber");
+
+// Set default form date to today
 if (qDateInput) {
     qDateInput.value = new Date().toISOString().split("T")[0];
 }
@@ -38,6 +47,36 @@ let previousQuestions = [];
 let currentIndex = 0;
 let previousIndex = 0;
 let viewingPreviousMonth = false;
+
+// =====================================
+// AUTO-FETCH NEXT QUESTION NUMBER
+// =====================================
+
+async function fetchNextQuestionNumber() {
+    if (!qDateInput || !qNumberInput) return;
+
+    const selectedDate = qDateInput.value;
+    if (!selectedDate) return;
+
+    try {
+        const response = await fetch(`${API_URL}/next-number?selected_date=${selectedDate}`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch next question number");
+        }
+
+        const data = await response.json();
+        if (data.next_question_number !== undefined) {
+            qNumberInput.value = data.next_question_number;
+        }
+    } catch (error) {
+        console.error("Error fetching next question number:", error);
+    }
+}
+
+// Re-calculate question number whenever the user changes the form date
+if (qDateInput) {
+    qDateInput.addEventListener("change", fetchNextQuestionNumber);
+}
 
 // =====================================
 // GET PREVIOUS MONTH NAME
@@ -87,7 +126,7 @@ async function loadQuestions() {
         console.error("Error loading current questions:", error);
         if (contentHeading && contentDescription) {
             contentHeading.textContent = "Unable to load questions";
-            contentDescription.textContent = "Please make sure FastAPI is running on http://127.0.0.1:8000";
+            contentDescription.textContent = "Please make sure FastAPI backend is running.";
         }
     }
 }
@@ -265,7 +304,10 @@ if (addQuestionForm) {
 
             alert("Question added successfully!");
             addQuestionForm.reset();
+
+            // Reset default date to today and auto-fetch the updated next question number
             if (qDateInput) qDateInput.value = new Date().toISOString().split("T")[0];
+            await fetchNextQuestionNumber();
 
             if (!viewingPreviousMonth) {
                 await loadQuestions();
@@ -317,6 +359,9 @@ if (deleteQuestionButton) {
             } else {
                 await loadQuestions();
             }
+
+            // Refresh auto-number in form after deletion
+            await fetchNextQuestionNumber();
         } catch (error) {
             console.error("Error deleting question:", error);
             alert("Failed to delete question.");
@@ -330,3 +375,4 @@ if (deleteQuestionButton) {
 
 if (currentDayButton) currentDayButton.style.display = "none";
 loadQuestions();
+fetchNextQuestionNumber();

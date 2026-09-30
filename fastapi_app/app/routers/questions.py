@@ -1,6 +1,6 @@
 from datetime import date
 from typing import List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from app.database.database import get_connection
 
@@ -13,6 +13,24 @@ class QuestionSchema(BaseModel):
     title: str
     image: str
     description: str
+
+
+@router.get("/questions/next-number")
+def get_next_question_number(selected_date: str = Query(...)):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT MAX(question_number)
+        FROM questions
+        WHERE date = ?
+    """, (selected_date,))
+
+    row = cursor.fetchone()
+    connection.close()
+
+    max_num = row[0] if row and row[0] is not None else 0
+    return {"next_question_number": max_num + 1}
 
 
 @router.get("/questions")

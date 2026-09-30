@@ -15,18 +15,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Allowed domains that can make requests to this backend
-origins = [
-    "https://question-tv.vercel.app",  # Your production Vercel frontend
-    "http://127.0.0.1:5500",           # Local development (Live Server)
-    "http://localhost:5500",
-    "http://localhost:3000",
-    "http://localhost:5173",
-]
-
+# CORS Middleware configured to allow access across devices and cloud frontends
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,             # Restrict to specified frontend URLs
+    allow_origins=["*"],  # Allows requests from any origin/device
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
