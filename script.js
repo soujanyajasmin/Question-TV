@@ -2,8 +2,7 @@
 // API CONFIGURATION
 // =====================================
 
-// Automatically uses your production backend when deployed, or fallback to localhost during local testing
-const PROD_BACKEND_URL = "https://your-backend-service.onrender.com"; // Replace with your deployed backend URL
+const PROD_BACKEND_URL = "https://question-tv-backend.onrender.com"; // replacing with deployed backend URL
 
 const BASE_URL = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
     ? "http://127.0.0.1:8000"
