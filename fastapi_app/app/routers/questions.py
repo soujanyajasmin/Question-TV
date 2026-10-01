@@ -50,7 +50,7 @@ def get_questions():
             description
         FROM questions
         WHERE date = ?
-        ORDER BY question_number
+        ORDER BY question_number ASC
     """, (current_date,))
 
     questions = cursor.fetchall()
@@ -97,7 +97,7 @@ def get_previous_month_questions():
             description
         FROM questions
         WHERE date LIKE ?
-        ORDER BY question_number
+        ORDER BY date ASC, question_number ASC
     """, (previous_month_string + "%",))
 
     questions = cursor.fetchall()
@@ -125,13 +125,17 @@ def create_question(payload: QuestionSchema):
     cursor.execute("""
         INSERT INTO questions (date, question_number, title, image, description)
         VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(date, question_number) DO UPDATE SET
+            title = EXCLUDED.title,
+            image = EXCLUDED.image,
+            description = EXCLUDED.description
     """, (payload.date, payload.question_number, payload.title, payload.image, payload.description))
 
     connection.commit()
     new_id = cursor.lastrowid
     connection.close()
 
-    return {"message": "Question created successfully", "id": new_id}
+    return {"message": "Question saved successfully", "id": new_id}
 
 
 @router.delete("/questions/{question_id}")

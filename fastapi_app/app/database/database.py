@@ -21,11 +21,12 @@ def create_questions_table():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT,
-            question_number INTEGER,
+            date TEXT NOT NULL,
+            question_number INTEGER NOT NULL,
             title TEXT,
             image TEXT,
-            description TEXT
+            description TEXT,
+            UNIQUE(date, question_number)
         )
     """)
 
@@ -39,82 +40,21 @@ def insert_sample_questions():
 
     today_str = date.today().strftime("%Y-%m-%d")
 
-    # 10 Questions for the Current Day
     questions = [
-        (
-            today_str,
-            1,
-            "Artificial Intelligence",
-            "https://images.pexels.com/photos/8566467/pexels-photo-8566467.jpeg",
-            "Artificial Intelligence focuses on creating systems that perform tasks requiring human intelligence."
-        ),
-        (
-            today_str,
-            2,
-            "Machine Learning",
-            "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",
-            "Machine Learning enables computers to learn from data and make predictions or decisions."
-        ),
-        (
-            today_str,
-            3,
-            "Cloud Computing",
-            "https://images.pexels.com/photos/1181316/pexels-photo-1181316.jpeg",
-            "Cloud Computing delivers computing services including servers, storage, databases, and software over the internet."
-        ),
-        (
-            today_str,
-            4,
-            "Internet of Things",
-            "https://images.pexels.com/photos/442150/pexels-photo-442150.jpeg",
-            "The Internet of Things connects everyday physical objects to the internet to collect and exchange data."
-        ),
-        (
-            today_str,
-            5,
-            "Cyber Security",
-            "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg",
-            "Cyber Security protects systems, networks, and applications from digital attacks and unauthorized access."
-        ),
-        (
-            today_str,
-            6,
-            "DevOps",
-            "https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg",
-            "DevOps combines software development and IT operations to shorten the systems development life cycle."
-        ),
-        (
-            today_str,
-            7,
-            "Blockchain",
-            "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg",
-            "Blockchain is a decentralized, distributed ledger technology that records transactions securely across computers."
-        ),
-        (
-            today_str,
-            8,
-            "Big Data Analytics",
-            "https://images.pexels.com/photos/669610/pexels-photo-669610.jpeg",
-            "Big Data Analytics examines large sets of data to uncover hidden patterns, correlations, and business trends."
-        ),
-        (
-            today_str,
-            9,
-            "Quantum Computing",
-            "https://images.pexels.com/photos/256381/pexels-photo-256381.jpeg",
-            "Quantum Computing uses principles of quantum mechanics to solve complex computational problems exponentially faster."
-        ),
-        (
-            today_str,
-            10,
-            "Computer Vision",
-            "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg",
-            "Computer Vision enables computers and systems to derive meaningful information from digital images and videos."
-        )
+        (today_str, 1, "Artificial Intelligence", "https://images.pexels.com/photos/8566467/pexels-photo-8566467.jpeg", "Artificial Intelligence focuses on creating systems that perform tasks requiring human intelligence."),
+        (today_str, 2, "Machine Learning", "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg", "Machine Learning enables computers to learn from data and make predictions or decisions."),
+        (today_str, 3, "Cloud Computing", "https://images.pexels.com/photos/1181316/pexels-photo-1181316.jpeg", "Cloud Computing delivers computing services including servers, storage, databases, and software over the internet."),
+        (today_str, 4, "Internet of Things", "https://images.pexels.com/photos/442150/pexels-photo-442150.jpeg", "The Internet of Things connects everyday physical objects to the internet to collect and exchange data."),
+        (today_str, 5, "Cyber Security", "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg", "Cyber Security protects systems, networks, and applications from digital attacks and unauthorized access."),
+        (today_str, 6, "DevOps", "https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg", "DevOps combines software development and IT operations to shorten the systems development life cycle."),
+        (today_str, 7, "Blockchain", "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg", "Blockchain is a decentralized, distributed ledger technology that records transactions securely across computers."),
+        (today_str, 8, "Big Data Analytics", "https://images.pexels.com/photos/669610/pexels-photo-669610.jpeg", "Big Data Analytics examines large sets of data to uncover hidden patterns, correlations, and business trends."),
+        (today_str, 9, "Quantum Computing", "https://images.pexels.com/photos/256381/pexels-photo-256381.jpeg", "Quantum Computing uses principles of quantum mechanics to solve complex computational problems exponentially faster."),
+        (today_str, 10, "Computer Vision", "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg", "Computer Vision enables computers and systems to derive meaningful information from digital images and videos.")
     ]
 
     cursor.executemany("""
-        INSERT INTO questions
+        INSERT OR REPLACE INTO questions
         (date, question_number, title, image, description)
         VALUES (?, ?, ?, ?, ?)
     """, questions)
@@ -133,47 +73,16 @@ def insert_previous_month_questions():
     prev_month_str = last_day_prev_month.strftime("%Y-%m")
     sample_date = f"{prev_month_str}-15"
 
-    # 5 Questions for the Previous Month
     questions = [
-        (
-            sample_date,
-            1,
-            "What is Data Science?",
-            "https://images.pexels.com/photos/669610/pexels-photo-669610.jpeg",
-            "Data Science combines math, statistics, and programming to extract actionable insights from data."
-        ),
-        (
-            sample_date,
-            2,
-            "What is Deep Learning?",
-            "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg",
-            "Deep Learning is a subset of machine learning based on artificial neural networks with representation learning."
-        ),
-        (
-            sample_date,
-            3,
-            "What is a Database?",
-            "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg",
-            "A database is an organized collection of structured information or data stored electronically in a computer system."
-        ),
-        (
-            sample_date,
-            4,
-            "What is Web Development?",
-            "https://images.pexels.com/photos/270404/pexels-photo-270404.jpeg",
-            "Web Development involves creating, building, and maintaining websites and web applications for the internet."
-        ),
-        (
-            sample_date,
-            5,
-            "What is Mobile App Development?",
-            "https://images.pexels.com/photos/1092644/pexels-photo-1092644.jpeg",
-            "Mobile App Development is the process of creating software applications that run on mobile devices."
-        )
+        (sample_date, 1, "What is Data Science?", "https://images.pexels.com/photos/669610/pexels-photo-669610.jpeg", "Data Science combines math, statistics, and programming to extract actionable insights from data."),
+        (sample_date, 2, "What is Deep Learning?", "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg", "Deep Learning is a subset of machine learning based on artificial neural networks with representation learning."),
+        (sample_date, 3, "What is a Database?", "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg", "A database is an organized collection of structured information or data stored electronically in a computer system."),
+        (sample_date, 4, "What is Web Development?", "https://images.pexels.com/photos/270404/pexels-photo-270404.jpeg", "Web Development involves creating, building, and maintaining websites and web applications for the internet."),
+        (sample_date, 5, "What is Mobile App Development?", "https://images.pexels.com/photos/1092644/pexels-photo-1092644.jpeg", "Mobile App Development is the process of creating software applications that run on mobile devices.")
     ]
 
     cursor.executemany("""
-        INSERT INTO questions
+        INSERT OR REPLACE INTO questions
         (date, question_number, title, image, description)
         VALUES (?, ?, ?, ?, ?)
     """, questions)
@@ -191,7 +100,6 @@ def init_db():
     count = cursor.fetchone()[0]
     connection.close()
 
-    # ONLY seed sample questions if database is completely empty
     if count == 0:
         insert_sample_questions()
         insert_previous_month_questions()

@@ -4,97 +4,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Question TV</title>
+    <title>Question TV — Digital News Channel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- HEADER -->
-    <header class="header">
-        <button class="menu-button" aria-label="Toggle Menu">☰</button>
-        <div class="logo">
-            <span class="logo-icon">📺</span>
-            <h1>QUESTION TV</h1>
+    <!-- NEWSPAPER TOP HEADER / MASTHEAD -->
+    <header class="newspaper-header">
+        <div class="top-bar">
+            <div class="issue-details">
+                <span id="headerDate">DATE: --/--/----</span> | <span>LIVE DIGITAL EDITION</span>
+            </div>
+            <div class="auth-controls">
+                <button id="adminLoginTrigger" class="btn btn-outline btn-sm">Admin Desk Login</button>
+                <button id="adminLogoutTrigger" class="btn btn-outline btn-sm hidden">Logout (Admin)</button>
+            </div>
         </div>
+
+        <div class="masthead">
+            <div class="logo">
+                <span class="logo-icon">📺</span>
+                <h1>QUESTION TV</h1>
+            </div>
+            <p class="tagline">The Interactive Daily Digital News Portal</p>
+        </div>
+
+        <nav class="nav-bar">
+            <button id="currentDayButtonNav" class="nav-item active">Today's Edition</button>
+            <button id="previousMonthButton" class="nav-item">Previous Month</button>
+        </nav>
     </header>
 
-    <!-- MAIN PAGE -->
+    <!-- MAIN SINGLE-COLUMN CONTAINER -->
     <main class="main-container">
 
-        <!-- PREVIOUS MONTH -->
-        <aside class="previous-section card">
-            <h2>Archive</h2>
-            <div class="previous-box">
-                <h3 id="previousMonthName">Previous Month</h3>
-                <p id="previousMonthText">Previous month data</p>
-                <button id="previousMonthButton" class="btn btn-secondary">View Data</button>
-            </div>
-        </aside>
-
-        <!-- CURRENT DATA -->
-        <section class="current-section card">
+        <!-- MAIN EDITION SECTION -->
+        <section class="current-section paper-sheet">
+            
+            <!-- SECTION HEADER -->
             <div class="section-header">
-                <h2 id="sectionTitle">Current Day</h2>
-                <button id="currentDayButton" class="btn btn-outline current-day-button">Current Day</button>
+                <div>
+                    <h2 id="sectionTitle" class="edition-title">TODAY'S EDITION</h2>
+                    <p id="sectionSubtext" class="section-subtext hidden"></p>
+                </div>
+                <button id="currentDayButton" class="btn btn-outline current-day-button hidden">Return to Today</button>
             </div>
 
-            <!-- BUCKETS NAVIGATION -->
-            <div class="bucket-area">
-                <button class="arrow-button" id="previousButton" aria-label="Previous Question">←</button>
+            <!-- INTERACTIVE SEGMENT NAVIGATION BAR -->
+            <div class="question-nav-container">
+                <button class="arrow-button" id="previousButton" title="Previous Segment" aria-label="Previous Segment">←</button>
+                <div class="question-pills-wrapper" id="questionPillsWrapper">
+                    <!-- Dynamic Segment Pills Render Here -->
+                </div>
+                <button class="arrow-button" id="nextButton" title="Next Segment" aria-label="Next Segment">→</button>
+            </div>
 
-                <div class="bucket active" id="activeBucket">
-                    Question 1
+            <!-- ARTICLE FRONT PAGE DISPLAY -->
+            <article class="newspaper-article" id="articleCard">
+                <div class="article-meta">
+                    <span class="meta-tag" id="metaBadge">LIVE BROADCAST</span>
+                    <span id="questionCounter" class="question-counter">Segment 1 of 1</span>
                 </div>
 
-                <button class="arrow-button" id="nextButton" aria-label="Next Question">→</button>
-            </div>
+                <h1 id="contentHeading" class="article-headline">Loading News Headline...</h1>
 
-            <!-- QUESTION COUNTER -->
-            <div id="questionCounter" class="question-counter">
-                Question 1 of 10
-            </div>
-
-            <!-- SELECTED CONTENT -->
-            <article class="selected-content">
-                <h2 id="contentHeading">Artificial Intelligence</h2>
-
-                <div class="content-image">
-                    <img id="contentImage" src="https://images.pexels.com/photos/8566467/pexels-photo-8566467.jpeg" alt="Question Image">
+                <div class="byline-bar">
+                    <span>Published by <strong>Question TV Admin Desk</strong></span>
+                    <span class="divider">•</span>
+                    <span id="bylineDate">Daily Issue</span>
                 </div>
 
-                <p id="contentDescription">
-                    Artificial Intelligence is a field of computer science that focuses on creating systems that can perform tasks that normally require human intelligence.
-                </p>
+                <div class="content-image-wrapper">
+                    <img id="contentImage" src="https://images.pexels.com/photos/8566467/pexels-photo-8566467.jpeg" alt="News Segment Image">
+                    <div class="image-caption" id="imageCaption">Interactive Visual Coverage</div>
+                </div>
 
-                <div class="action-bar">
-                    <button id="deleteQuestionButton" class="btn btn-danger">
-                        Delete Question
-                    </button>
+                <div class="article-body">
+                    <p id="contentDescription" class="article-text">News report text and detailed coverage will display here.</p>
+                </div>
+
+                <!-- USER INTERACTION BUTTONS -->
+                <div class="user-actions-row">
+                    <button id="likeBtn" class="action-btn">❤️ <span id="likeCount">0</span> Likes</button>
+                    <button id="listenBtn" class="action-btn">🔊 Listen to Story</button>
+                    <button id="bookmarkBtn" class="action-btn">🔖 Save Story</button>
+                    <button id="shareBtn" class="action-btn">🔗 Share</button>
+                </div>
+
+                <!-- ADMIN ONLY DELETE ACTION -->
+                <div class="action-bar admin-only hidden">
+                    <button id="deleteQuestionButton" class="btn btn-danger">Remove Segment</button>
                 </div>
             </article>
 
-            <!-- ADMIN ADD QUESTION FORM -->
-            <div class="admin-section">
-                <h3>Add New Question</h3>
+            <!-- ADMIN DASHBOARD -->
+            <div class="admin-section admin-only hidden">
+                <h3>[Admin Desk] Publish News Segment</h3>
                 <form id="addQuestionForm" class="add-form">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="qDate">Date</label>
+                            <label for="qDate">Publication Date</label>
                             <input type="date" id="qDate" required />
                         </div>
                         <div class="form-group">
-                            <label for="qNumber">Question Number</label>
+                            <label for="qNumber">Segment Number</label>
                             <input type="number" id="qNumber" placeholder="e.g. 1" required />
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="qTitle">Title</label>
-                        <input type="text" id="qTitle" placeholder="Enter title" required />
+                        <label for="qTitle">Headline / News Title</label>
+                        <input type="text" id="qTitle" placeholder="Enter news headline..." required />
                     </div>
 
                     <div class="form-group">
@@ -103,19 +127,32 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="qDescription">Description</label>
-                        <textarea id="qDescription" placeholder="Enter detailed description..." rows="4" required></textarea>
+                        <label for="qDescription">Story Coverage / Report</label>
+                        <textarea id="qDescription" placeholder="Enter detailed news coverage..." rows="4" required></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        Submit Question
-                    </button>
+                    <button type="submit" class="btn btn-primary">Publish News Segment</button>
                 </form>
             </div>
 
         </section>
 
     </main>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="loginModal" class="modal hidden">
+        <div class="modal-content">
+            <span id="closeModal" class="close-btn">&times;</span>
+            <h3>Admin Desk Authentication</h3>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="adminPassword">Enter Admin Password</label>
+                    <input type="password" id="adminPassword" placeholder="Password (admin123)" required />
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Login to Admin Desk</button>
+            </form>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 

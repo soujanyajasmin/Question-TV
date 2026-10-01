@@ -1,221 +1,124 @@
+from datetime import date, timedelta
 from .database import get_connection
 
 
 def create_questions_table():
-
     connection = get_connection()
-
     cursor = connection.cursor()
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT,
-            question_number INTEGER,
+            date TEXT NOT NULL,
+            question_number INTEGER NOT NULL,
             title TEXT,
             image TEXT,
-            description TEXT
+            description TEXT,
+            UNIQUE(date, question_number)
         )
     """)
 
     connection.commit()
-
     connection.close()
 
-
-def insert_sample_questions():
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    # Remove old sample data
-    cursor.execute("DELETE FROM questions")
-
-    questions = [
-
-        (
-            "2026-09-25",
-            1,
-            "Artificial Intelligence",
-            "https://images.pexels.com/photos/8566467/pexels-photo-8566467.jpeg",
-            "Artificial Intelligence is a field of computer science that focuses on creating systems that can perform tasks that normally require human intelligence."
-        ),
-
-        (
-            "2026-09-25",
-            2,
-            "Machine Learning",
-            "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",
-            "Machine Learning is a branch of artificial intelligence that allows computers to learn from data and make predictions or decisions."
-        ),
-
-        (
-            "2026-09-25",
-            3,
-            "Cloud Computing",
-            "https://images.pexels.com/photos/1181316/pexels-photo-1181316.jpeg",
-            "Cloud Computing provides computing resources such as servers, storage and applications through the internet."
-        ),
-
-        (
-            "2026-09-25",
-            4,
-            "Internet of Things",
-            "https://images.pexels.com/photos/442150/pexels-photo-442150.jpeg",
-            "The Internet of Things connects physical devices to the internet so they can collect, exchange and use data."
-        ),
-
-        (
-            "2026-09-25",
-            5,
-            "Cyber Security",
-            "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg",
-            "Cyber Security protects computers, networks, applications and data from unauthorized access and cyber threats."
-        ),
-
-        (
-                "2026-09-25",
-                6,
-                "HTML",
-                "https://images.pexels.com/photos/270404/pexels-photo-270404.jpeg",
-                "HTML is the standard markup language used to create the structure of web pages."
-            ),
-    
-            (
-                "2026-09-25",
-                7,
-                "CSS",
-                "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg",
-                "CSS is used to style and design the appearance of web pages."
-            ),
-    
-            (
-                "2026-09-25",
-                8,
-                "JavaScript",
-                "https://images.pexels.com/photos/11035471/pexels-photo-11035471.jpeg",
-                "JavaScript is a programming language used to make web pages interactive."
-            ),
-    
-            (
-                "2026-09-25",
-                9,
-                "Python",
-                "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg",
-                "Python is a high-level programming language used for web development, data analysis, automation and many other applications."
-            ),
-    
-            (
-                "2026-09-25",
-                10,
-                "SQL",
-                "https://images.pexels.com/photos/1108117/pexels-photo-1108117.jpeg",
-                "SQL is a language used to store, retrieve and manage data in relational databases."
-            )    
-
-    ]
-
-    cursor.executemany("""
-        INSERT INTO questions
-        (date, question_number, title, image, description)
-        VALUES (?, ?, ?, ?, ?)
-    """, questions)
-
-    connection.commit()
-
-    connection.close()
 
 def insert_previous_month_questions():
-
+    """Populates 10 news stories for September (Previous Month) with ET/Mint style data."""
     connection = get_connection()
-
     cursor = connection.cursor()
 
-    # Remove existing previous month questions
-    cursor.execute("""
-        DELETE FROM questions
-        WHERE date LIKE '2026-08%'
-    """)
+    today = date.today()
+    first_day_this_month = date(today.year, today.month, 1)
+    last_day_prev_month = first_day_this_month - timedelta(days=1)
+    prev_month_str = last_day_prev_month.strftime("%Y-%m")
+    september_date = f"{prev_month_str}-25"
 
-    questions = [
-
+    news_segments = [
         (
-            "2026-08-25",
-            1,
-            "What is Data Science?",
-            "https://images.pexels.com/photos/669610/pexels-photo-669610.jpeg",
-            "Data Science is the process of using data, statistics and programming to find useful information and insights."
+            september_date, 1, 
+            "TECH & AI: OpenAI Unveils Agentic AI Framework for Enterprise Automation", 
+            "https://images.pexels.com/photos/8566467/pexels-photo-8566467.jpeg", 
+            "SAN FRANCISCO — OpenAI has officially released its next-generation agentic artificial intelligence tools aimed at enterprise users. The framework enables autonomous AI agents to execute multi-step workflows, manage cloud databases, and handle customer service workflows with human-in-the-loop oversight."
         ),
-
         (
-            "2026-08-25",
-            2,
-            "What is Deep Learning?",
-            "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg",
-            "Deep Learning is a part of machine learning that uses neural networks to learn from large amounts of data."
+            september_date, 2, 
+            "MARKETS: Global Markets Rally as Central Banks Signal Interest Rate Pause", 
+            "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg", 
+            "MUMBAI — Benchmark stock indices surged in early trade following global cues after key central banks signaled an upcoming pause on rate hikes. Tech and banking stocks led the gains, boosting market capitalisation across major exchanges."
         ),
-
         (
-            "2026-08-25",
-            3,
-            "What is a Database?",
-            "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg",
-            "A database is an organized collection of data that can be stored, accessed and managed easily."
+            september_date, 3, 
+            "CYBER SECURITY: Critical Zero-Day Vulnerability Patched in Enterprise Systems", 
+            "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg", 
+            "NEW DELHI — Cybersecurity agencies have issued an urgent patch advisory following the discovery of a high-severity zero-day exploit targeting enterprise cloud infrastructure. Security operations teams are urged to apply immediate updates to safeguard sensitive network data."
         ),
-
         (
-            "2026-08-25",
-            4,
-            "What is an API?",
-            "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",
-            "An API allows different software applications to communicate with each other and exchange data."
+            september_date, 4, 
+            "CLOUD COMPUTING: Cloud Infrastructure Spending Surges 22% in Q3", 
+            "https://images.pexels.com/photos/1181316/pexels-photo-1181316.jpeg", 
+            "BENGALURU — Global enterprise cloud infrastructure expenditure reached new highs this quarter, driven by heavy investment in generative AI infrastructure, hybrid cloud migrations, and edge computing deployment across financial sectors."
         ),
-
         (
-            "2026-08-25",
-            5,
-            "What is FastAPI?",
-            "https://images.pexels.com/photos/1181675/pexels-photo-1181675.jpeg",
-            "FastAPI is a Python web framework used to build fast and modern APIs."
+            september_date, 5, 
+            "STARTUPS: High-Tech Manufacturing Startups Raise $1.2B in Funding", 
+            "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg", 
+            "HYDERABAD — Venture capital funding into deep-tech and semiconductor hardware startups saw a massive resurgence this month. Investors are doubling down on local chip design, green energy grid solutions, and autonomous robotics."
+        ),
+        (
+            september_date, 6, 
+            "TELECOM: Next-Gen 6G Research Initiative Unveiled by Telecom Giants", 
+            "https://images.pexels.com/photos/442150/pexels-photo-442150.jpeg", 
+            "SEOUL — Leading telecommunication conglomerates have announced a joint consortium to establish global standards for 6G wireless networks, aiming for sub-terahertz speeds and near-zero latency by the end of the decade."
+        ),
+        (
+            september_date, 7, 
+            "ECONOMY: India's Manufacturing PMI Touches 18-Month High in September", 
+            "https://images.pexels.com/photos/669610/pexels-photo-669610.jpeg", 
+            "MUMBAI — Robust demand and expanding export orders pushed India's manufacturing purchasing managers' index (PMI) to its highest point in 18 months, pointing to continued resilience across key industrial sectors."
+        ),
+        (
+            september_date, 8, 
+            "EV SECTOR: Battery Swapping Policy Expansion Boosts Urban EV Adoption", 
+            "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg", 
+            "BENGALURU — The rollout of standardized battery-swapping stations across metropolitan hubs has driven a sharp increase in two-wheeler and commercial electric vehicle sales, addressing long-standing range anxiety concerns."
+        ),
+        (
+            september_date, 9, 
+            "SOFTWARE ENG: FastAPI & Microservices Adopted by 75% of Top FinTechs", 
+            "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg", 
+            "SAN JOSE — Modern financial platforms are rapidly replacing legacy monolithic backends with lightweight Python FastAPI microservices to handle real-time transaction speeds and high-concurrency API calls."
+        ),
+        (
+            september_date, 10, 
+            "DATABASE TECH: Distributed Relational Databases Gain Ground in Banking", 
+            "https://images.pexels.com/photos/325229/pexels-photo-325229.jpeg", 
+            "LONDON — Global retail banks are transitioning to high-availability distributed SQL setups to ensure zero downtime and strict ACID compliance during peak holiday shopping traffic."
         )
-
     ]
 
     cursor.executemany("""
         INSERT INTO questions
         (date, question_number, title, image, description)
         VALUES (?, ?, ?, ?, ?)
-    """, questions)
+        ON CONFLICT(date, question_number) DO NOTHING
+    """, news_segments)
 
     connection.commit()
-
     connection.close()
 
-def insert_question(
-    date,
-    question_number,
-    title,
-    image,
-    description
-):
 
+def insert_question(date, question_number, title, image, description):
     connection = get_connection()
-
     cursor = connection.cursor()
 
     cursor.execute("""
-        INSERT INTO questions
-        (date, question_number, title, image, description)
+        INSERT INTO questions (date, question_number, title, image, description)
         VALUES (?, ?, ?, ?, ?)
-    """, (
-        date,
-        question_number,
-        title,
-        image,
-        description
-    ))
+        ON CONFLICT(date, question_number) DO UPDATE SET
+            title = EXCLUDED.title,
+            image = EXCLUDED.image,
+            description = EXCLUDED.description
+    """, (date, question_number, title, image, description))
 
     connection.commit()
-
     connection.close()
