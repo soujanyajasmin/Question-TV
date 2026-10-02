@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question TV — Digital News Channel</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#c8102e">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,15 +15,21 @@
 
 <body>
 
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <!-- NEWSPAPER TOP HEADER / MASTHEAD -->
     <header class="newspaper-header">
         <div class="top-bar">
             <div class="issue-details">
                 <span id="headerDate">DATE: --/--/----</span> | <span>LIVE DIGITAL EDITION</span>
             </div>
-            <div class="auth-controls">
-                <button id="adminLoginTrigger" class="btn btn-outline btn-sm">Admin Desk Login</button>
-                <button id="adminLogoutTrigger" class="btn btn-outline btn-sm hidden">Logout (Admin)</button>
+            <div class="top-bar-controls">
+                <button id="themeToggleBtn" class="btn btn-outline btn-sm">🌙 Dark Mode</button>
+                <div class="auth-controls">
+                    <button id="adminLoginTrigger" class="btn btn-outline btn-sm">Admin Desk Login</button>
+                    <button id="adminLogoutTrigger" class="btn btn-outline btn-sm hidden">Logout (Admin)</button>
+                </div>
             </div>
         </div>
 
@@ -33,9 +41,24 @@
             <p class="tagline">The Interactive Daily Digital News Portal</p>
         </div>
 
+        <!-- SEARCH BAR & CATEGORIES -->
+        <div class="search-category-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Search news stories by keyword...">
+            </div>
+            <div class="category-pills" id="categoryPills">
+                <button class="cat-pill active" data-category="All">All</button>
+                <button class="cat-pill" data-category="National">National</button>
+                <button class="cat-pill" data-category="Tech">Tech</button>
+                <button class="cat-pill" data-category="Sports">Sports</button>
+                <button class="cat-pill" data-category="Entertainment">Entertainment</button>
+            </div>
+        </div>
+
         <nav class="nav-bar">
             <button id="currentDayButtonNav" class="nav-item active">Today's Edition</button>
             <button id="previousMonthButton" class="nav-item">Previous Month</button>
+            <button id="viewSavedBtn" class="nav-item">🔖 Saved Stories (<span id="savedCount">0</span>)</button>
         </nav>
     </header>
 
@@ -67,7 +90,10 @@
             <article class="newspaper-article" id="articleCard">
                 <div class="article-meta">
                     <span class="meta-tag" id="metaBadge">LIVE BROADCAST</span>
-                    <span id="questionCounter" class="question-counter">Segment 1 of 1</span>
+                    <div class="article-meta-right">
+                        <span id="viewCountBadge" class="view-count-badge">👁️ 0 Views</span>
+                        <span id="questionCounter" class="question-counter">Segment 1 of 1</span>
+                    </div>
                 </div>
 
                 <h1 id="contentHeading" class="article-headline">Loading News Headline...</h1>
@@ -76,6 +102,8 @@
                     <span>Published by <strong>Question TV Admin Desk</strong></span>
                     <span class="divider">•</span>
                     <span id="bylineDate">Daily Issue</span>
+                    <span class="divider">•</span>
+                    <span id="bylineCategory" class="byline-category">Category: General</span>
                 </div>
 
                 <div class="content-image-wrapper">
@@ -84,21 +112,49 @@
                 </div>
 
                 <div class="article-body">
-                    <p id="contentDescription" class="article-text">News report text and detailed coverage will display here.</p>
+                    <div id="contentDescription" class="article-text">News report text and detailed coverage will display here.</div>
+                </div>
+
+                <!-- ENHANCED SPEECH CONTROLS PANEL -->
+                <div class="speech-controls-panel">
+                    <span class="speech-title">🔊 Audio Reader:</span>
+                    <button id="playAudioBtn" class="btn btn-sm btn-outline">▶ Play</button>
+                    <button id="pauseAudioBtn" class="btn btn-sm btn-outline">⏸ Pause</button>
+                    <button id="stopAudioBtn" class="btn btn-sm btn-outline">⏹ Stop</button>
+                    <label for="speechSpeed">Speed:</label>
+                    <select id="speechSpeed" class="speech-speed-select">
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>1.0x</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2.0x</option>
+                    </select>
                 </div>
 
                 <!-- USER INTERACTION BUTTONS -->
                 <div class="user-actions-row">
                     <button id="likeBtn" class="action-btn">❤️ <span id="likeCount">0</span> Likes</button>
-                    <button id="listenBtn" class="action-btn">🔊 Listen to Story</button>
                     <button id="bookmarkBtn" class="action-btn">🔖 Save Story</button>
-                    <button id="shareBtn" class="action-btn">🔗 Share</button>
+                    <button id="shareBtn" class="action-btn">🔗 Share Link</button>
                 </div>
 
                 <!-- ADMIN ONLY DELETE ACTION -->
                 <div class="action-bar admin-only hidden">
                     <button id="deleteQuestionButton" class="btn btn-danger">Remove Segment</button>
                 </div>
+
+                <!-- COMMENTS SECTION -->
+                <section class="comments-section">
+                    <h3>💬 Reader Discussion</h3>
+                    <form id="commentForm" class="comment-form">
+                        <input type="text" id="commentAuthor" placeholder="Your Name" required>
+                        <textarea id="commentText" placeholder="Share your thoughts on this story..." rows="3" required></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
+                    </form>
+                    <div id="commentsList" class="comments-list">
+                        <!-- Dynamic comments render here -->
+                    </div>
+                </section>
             </article>
 
             <!-- ADMIN DASHBOARD -->
@@ -116,9 +172,20 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="qTitle">Headline / News Title</label>
-                        <input type="text" id="qTitle" placeholder="Enter news headline..." required />
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="qTitle">Headline / News Title</label>
+                            <input type="text" id="qTitle" placeholder="Enter news headline..." required />
+                        </div>
+                        <div class="form-group">
+                            <label for="qCategory">Category</label>
+                            <select id="qCategory" required>
+                                <option value="National">National</option>
+                                <option value="Tech">Tech</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Entertainment">Entertainment</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -127,11 +194,19 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="qDescription">Story Coverage / Report</label>
-                        <textarea id="qDescription" placeholder="Enter detailed news coverage..." rows="4" required></textarea>
+                        <label>Story Coverage / Report (Rich Text Controls)</label>
+                        <div class="rich-editor-toolbar">
+                            <button type="button" class="btn btn-sm btn-outline" id="richBoldBtn"><b>B</b></button>
+                            <button type="button" class="btn btn-sm btn-outline" id="richItalicBtn"><i>I</i></button>
+                        </div>
+                        <div id="richEditor" class="rich-editor" contenteditable="true" placeholder="Enter detailed story coverage..."></div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Publish News Segment</button>
+                    <div class="admin-form-actions">
+                        <button type="submit" class="btn btn-primary">Publish News Segment</button>
+                        <button type="button" id="saveDraftBtn" class="btn btn-outline">Save as Draft</button>
+                        <button type="button" id="loadDraftBtn" class="btn btn-outline">Load Saved Draft</button>
+                    </div>
                 </form>
             </div>
 
@@ -151,6 +226,17 @@
                 </div>
                 <button type="submit" class="btn btn-primary btn-full">Login to Admin Desk</button>
             </form>
+        </div>
+    </div>
+
+    <!-- SAVED STORIES MODAL -->
+    <div id="savedStoriesModal" class="modal hidden">
+        <div class="modal-content saved-modal-content">
+            <span id="closeSavedModal" class="close-btn">&times;</span>
+            <h3>🔖 Your Saved Reading List</h3>
+            <div id="savedStoriesList" class="saved-stories-list">
+                <!-- Saved story items render dynamically here -->
+            </div>
         </div>
     </div>
 
