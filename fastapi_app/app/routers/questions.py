@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from app.database.database import get_connection
@@ -11,6 +11,7 @@ class QuestionSchema(BaseModel):
     date: str
     question_number: int
     title: str
+    category: Optional[str] = "National"
     image: str
     description: str
 
@@ -46,6 +47,7 @@ def get_questions():
             date,
             question_number,
             title,
+            category,
             image,
             description
         FROM questions
@@ -63,6 +65,7 @@ def get_questions():
             "date": question["date"],
             "question_number": question["question_number"],
             "title": question["title"],
+            "category": question["category"] if question["category"] else "National",
             "image": question["image"],
             "description": question["description"]
         })
@@ -93,6 +96,7 @@ def get_previous_month_questions():
             date,
             question_number,
             title,
+            category,
             image,
             description
         FROM questions
@@ -110,6 +114,7 @@ def get_previous_month_questions():
             "date": question["date"],
             "question_number": question["question_number"],
             "title": question["title"],
+            "category": question["category"] if question["category"] else "National",
             "image": question["image"],
             "description": question["description"]
         })
@@ -123,13 +128,14 @@ def create_question(payload: QuestionSchema):
     cursor = connection.cursor()
 
     cursor.execute("""
-        INSERT INTO questions (date, question_number, title, image, description)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO questions (date, question_number, title, category, image, description)
+        VALUES (?, ?, ?, ?, ?, ?)
         ON CONFLICT(date, question_number) DO UPDATE SET
             title = EXCLUDED.title,
+            category = EXCLUDED.category,
             image = EXCLUDED.image,
             description = EXCLUDED.description
-    """, (payload.date, payload.question_number, payload.title, payload.image, payload.description))
+    """, (payload.date, payload.question_number, payload.title, payload.category, payload.image, payload.description))
 
     connection.commit()
     new_id = cursor.lastrowid

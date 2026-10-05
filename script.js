@@ -118,7 +118,6 @@ function initTheme() {
     }
 
     if (themeToggleBtn) {
-        // Clone and replace button to clear redundant listeners
         const newBtn = themeToggleBtn.cloneNode(true);
         themeToggleBtn.parentNode.replaceChild(newBtn, themeToggleBtn);
         
@@ -580,11 +579,12 @@ function setupDraftsSystem() {
 
     if (saveDraftBtn) {
         saveDraftBtn.addEventListener("click", () => {
+            const categorySelect = document.getElementById("qCategory");
             const draft = {
                 date: document.getElementById("qDate") ? document.getElementById("qDate").value : "",
                 number: document.getElementById("qNumber") ? document.getElementById("qNumber").value : "",
                 title: document.getElementById("qTitle") ? document.getElementById("qTitle").value : "",
-                category: document.getElementById("qCategory") ? document.getElementById("qCategory").value : "",
+                category: categorySelect ? categorySelect.value : "National",
                 image: document.getElementById("qImage") ? document.getElementById("qImage").value : "",
                 description: richEditor ? richEditor.innerHTML : ""
             };
@@ -673,6 +673,7 @@ function renderQuestionPills(list, activeIdx) {
         const pill = document.createElement("button");
         pill.className = `q-pill ${index === activeIdx ? "active" : ""}`;
         pill.textContent = `Segment ${qNum}`;
+        
         pill.addEventListener("click", () => {
             if (viewingPreviousMonth) {
                 previousIndex = index;
@@ -682,7 +683,14 @@ function renderQuestionPills(list, activeIdx) {
                 displayCurrentQuestion();
             }
         });
+
         questionPillsWrapper.appendChild(pill);
+
+        if (index === activeIdx) {
+            setTimeout(() => {
+                pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }, 50);
+        }
     });
 }
 
@@ -853,11 +861,14 @@ if (addQuestionForm) {
     addQuestionForm.addEventListener("submit", async function (e) {
         e.preventDefault();
 
+        const categorySelect = document.getElementById("qCategory");
+        const selectedCategoryVal = categorySelect ? categorySelect.value : "National";
+
         const payload = {
             date: document.getElementById("qDate").value,
             question_number: parseInt(document.getElementById("qNumber").value, 10),
             title: document.getElementById("qTitle").value,
-            category: document.getElementById("qCategory").value,
+            category: selectedCategoryVal,
             image: document.getElementById("qImage").value,
             description: richEditor ? richEditor.innerHTML : ""
         };
