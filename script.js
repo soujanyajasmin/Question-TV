@@ -17,13 +17,7 @@ let isAdmin = localStorage.getItem("isAdmin") === "true";
 let selectedCategory = "All";
 let searchQuery = "";
 let articleFontSize = 1.15; // default rem
-
-// REGISTER SERVICE WORKER FOR PWA
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW Registration Failed:', err));
-    });
-}
+let statusTimeout;
 
 // DOM ELEMENTS
 const questionPillsWrapper = document.getElementById("questionPillsWrapper");
@@ -46,6 +40,7 @@ const bylineDate = document.getElementById("bylineDate");
 const bylineCategory = document.getElementById("bylineCategory");
 const metaBadge = document.getElementById("metaBadge");
 const viewCountBadge = document.getElementById("viewCountBadge");
+const actionStatusMessage = document.getElementById("actionStatusMessage");
 
 const qDateInput = document.getElementById("qDate");
 const qNumberInput = document.getElementById("qNumber");
@@ -90,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchNextQuestionNumber();
 });
 
-// TOAST NOTIFICATIONS
+// TOAST & INLINE ACTION NOTIFICATIONS
 function showToast(message, type = "info") {
     const container = document.getElementById("toastContainer");
     if (!container) return;
@@ -104,6 +99,18 @@ function showToast(message, type = "info") {
         toast.classList.remove("show");
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+function showActionNotification(message) {
+    if (!actionStatusMessage) return;
+
+    actionStatusMessage.textContent = message;
+    actionStatusMessage.classList.add("show");
+
+    clearTimeout(statusTimeout);
+    statusTimeout = setTimeout(() => {
+        actionStatusMessage.classList.remove("show");
+    }, 2500);
 }
 
 // DARK MODE
@@ -152,9 +159,34 @@ function setFontSize(size) {
 
 // SEARCH & CATEGORY FILTERING
 function setupSearchAndCategory() {
+    const clearBtn = document.getElementById("clearSearchBtn");
+
     if (searchInput) {
         searchInput.addEventListener("input", (e) => {
             searchQuery = e.target.value.toLowerCase().trim();
+            
+            if (clearBtn) {
+                if (searchQuery.length > 0) clearBtn.classList.remove("hidden");
+                else clearBtn.classList.add("hidden");
+            }
+
+            applyFilters();
+        });
+
+        searchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const article = document.getElementById("articleCard");
+                if (article) article.scrollIntoView({ behavior: "smooth" });
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+            if (searchInput) searchInput.value = "";
+            searchQuery = "";
+            clearBtn.classList.add("hidden");
             applyFilters();
         });
     }
@@ -320,7 +352,7 @@ function setupUserInteractionButtons() {
 
             const likeCountSpan = document.getElementById("likeCount");
             if (likeCountSpan) likeCountSpan.textContent = currentLikes;
-            showToast("Liked this story!", "success");
+            showActionNotification("Story liked!");
         });
     }
 
@@ -340,7 +372,7 @@ function setupUserInteractionButtons() {
             if (existingIndex > -1) {
                 savedStories.splice(existingIndex, 1);
                 localStorage.setItem("savedStories", JSON.stringify(savedStories));
-                showToast("Story removed from saved list", "info");
+                showActionNotification("Story removed from saved list");
             } else {
                 savedStories.push({
                     id: storyId,
@@ -350,7 +382,7 @@ function setupUserInteractionButtons() {
                     description: currentStory.description
                 });
                 localStorage.setItem("savedStories", JSON.stringify(savedStories));
-                showToast("Story saved to reading list!", "success");
+                showActionNotification("The story is saved");
             }
 
             updateButtonStates();
@@ -372,7 +404,7 @@ function setupUserInteractionButtons() {
             const shareUrl = `${baseUrl}?segment=${segNum}`;
 
             navigator.clipboard.writeText(shareUrl).then(() => {
-                showToast("Direct segment link copied to clipboard!", "success");
+                showActionNotification("The link is copied");
             }).catch(() => {
                 prompt("Copy this segment link:", shareUrl);
             });
@@ -915,7 +947,15 @@ if (deleteQuestionButton) {
             });
 
             if (!response.ok) throw new Error("Failed to delete segment");
+            const storyId = currentQuestion.id 
+                ? `story_${currentQuestion.id}` 
+                : `story_${currentQuestion.date}_${currentQuestion.question_number}`;
 
+            let savedStories = JSON.parse(localStorage.getItem("savedStories") || "[]");
+            savedStories = savedStories.filter(s => s.id !== storyId);
+            localStorage.setItem("savedStories", JSON.stringify(savedStories));
+
+            updateSavedCount();
             showToast("Segment removed successfully!", "success");
 
             if (viewingPreviousMonth) {

@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question TV — Digital News Channel</title>
-    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#c8102e">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,6 +44,7 @@
         <div class="search-category-bar">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="🔍 Search news stories by keyword...">
+                <button id="clearSearchBtn" class="clear-search-btn hidden" title="Clear Search">&times;</button>
             </div>
             <div class="category-pills" id="categoryPills">
                 <button class="cat-pill active" data-category="All">All</button>
@@ -129,6 +129,11 @@
                         <option value="1.5">1.5x</option>
                         <option value="2">2.0x</option>
                     </select>
+                </div>
+
+                <!-- ACTION NOTIFICATION AREA -->
+                <div class="action-notification-area">
+                    <span id="actionStatusMessage" class="action-status-message"></span>
                 </div>
 
                 <!-- USER INTERACTION BUTTONS -->

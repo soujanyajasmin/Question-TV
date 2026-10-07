@@ -76,6 +76,12 @@ body.dark-mode .q-pill.active {
     border-color: var(--primary-red);
 }
 
+body.dark-mode .action-status-message {
+    background-color: #1e3a29;
+    color: #a3e635;
+    border-color: #275238;
+}
+
 /* ==========================================================================
    BASE & RESET
    ========================================================================== */
@@ -156,11 +162,33 @@ body {
     padding: 10px;
 }
 
+.action-notification-area {
+    min-height: 28px;
+    margin-top: 16px;
+}
+
+.action-status-message {
+    display: inline-block;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.action-status-message.show {
+    opacity: 1;
+}
+
 .user-actions-row {
     display: flex;
     gap: 12px;
-    margin-top: 16px;
-    padding-top: 16px;
+    margin-top: 8px;
+    padding-top: 12px;
     border-top: 1px solid var(--border-subtle);
 }
 
@@ -414,7 +442,7 @@ body {
 }
 
 .question-pills-wrapper::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
 }
 
 .q-pill {
@@ -810,6 +838,48 @@ body.dark-mode #deleteQuestionButton:hover {
 
 .close-btn:hover {
     color: var(--primary-red);
+}
+
+/* ==========================================================================
+   SEARCH BOX CLEAR BUTTON
+   ========================================================================== */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.clear-search-btn:hover {
+    color: var(--primary-red);
+}
+
+/* ==========================================================================
+   FONT RESIZING TOOLBAR
+   ========================================================================== */
+.font-controls-panel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.font-control-title {
+    color: var(--color-text-dark);
 }
 
 /* ==========================================================================
