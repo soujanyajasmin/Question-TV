@@ -60,7 +60,6 @@ body.dark-mode .article-text {
     color: #e0e0e0;
 }
 
-body.dark-mode .cat-pill,
 body.dark-mode .action-btn,
 body.dark-mode .q-pill,
 body.dark-mode .arrow-button {
@@ -69,17 +68,30 @@ body.dark-mode .arrow-button {
     border-color: #444444;
 }
 
-body.dark-mode .cat-pill.active,
 body.dark-mode .q-pill.active {
     background-color: var(--primary-red);
     color: #ffffff;
     border-color: var(--primary-red);
 }
 
-body.dark-mode .action-status-message {
-    background-color: #1e3a29;
-    color: #a3e635;
-    border-color: #275238;
+body.dark-mode .text-resizer-capsule,
+body.dark-mode .speech-capsule {
+    background-color: #2a2a2a;
+    border-color: #444444;
+}
+
+body.dark-mode .resizer-btn,
+body.dark-mode .speech-btn {
+    color: #e0e0e0;
+}
+
+body.dark-mode .resizer-btn:hover,
+body.dark-mode .speech-btn:hover {
+    background-color: #383838;
+}
+
+body.dark-mode .resizer-divider {
+    background-color: #444444;
 }
 
 /* ==========================================================================
@@ -122,8 +134,10 @@ body {
 }
 
 .btn-sm {
-    padding: 6px 12px;
+    padding: 6px 14px;
     font-size: 0.8rem;
+    height: 34px;
+    border-radius: 17px;
 }
 
 .btn-primary {
@@ -216,23 +230,36 @@ body {
 }
 
 /* ==========================================================================
-   HEADER / MASTHEAD
+   HEADER 
    ========================================================================== */
 .newspaper-header {
     background: var(--bg-card);
     border-bottom: 4px double var(--primary-red);
-    padding: 16px 32px;
+    padding: 14px 28px;
 }
 
 .top-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
+    font-size: 0.825rem;
     font-weight: 700;
     color: var(--color-text-muted);
     border-bottom: 1px solid #e2e2e2;
     padding-bottom: 10px;
+    line-height: 1;
+}
+
+.issue-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+}
+
+.top-divider {
+    color: var(--border-subtle);
+    font-weight: 400;
 }
 
 .top-bar-controls {
@@ -243,12 +270,83 @@ body {
 
 .auth-controls {
     display: flex;
+    align-items: center;
     gap: 8px;
+}
+
+.top-control-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* SEARCH BAR */
+.top-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 34px;
+}
+
+.search-icon-svg {
+    position: absolute;
+    left: 12px;
+    width: 14px;
+    height: 14px;
+    color: var(--primary-red);
+    pointer-events: none;
+    transition: transform 0.2s ease;
+}
+
+.top-search-box input {
+    height: 34px;
+    width: 170px;
+    padding: 0 28px 0 32px;
+    border: 1.5px solid var(--primary-red);
+    border-radius: 17px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    outline: none;
+    background-color: var(--bg-card);
+    color: var(--color-text-dark);
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+}
+
+.top-search-box input:focus {
+    width: 210px;
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
+}
+
+.top-search-box input:focus + .search-icon-svg {
+    transform: scale(1.1);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-search-btn:hover {
+    color: var(--primary-red);
 }
 
 .masthead {
     text-align: center;
-    padding: 24px 0 16px 0;
+    padding: 22px 0 14px 0;
 }
 
 .masthead .logo {
@@ -280,60 +378,87 @@ body {
 }
 
 /* ==========================================================================
-   SEARCH & CATEGORY BAR
+   AUTOMATIC SCROLLING CATEGORY TICKER
    ========================================================================== */
-.search-category-bar {
-    display: flex;
-    flex-wrap: wrap;
+.auto-ticker-wrapper {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    margin: 16px 0 8px 0;
+    padding: 6px 0;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.category-pills-scroll-track {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin: 16px 0 12px 0;
-    padding: 10px 0;
+    gap: 12px;
+    width: max-content;
+    animation: autoTickerScroll 25s linear infinite;
 }
 
-.search-box input {
-    width: 280px;
-    padding: 8px 14px;
-    border: 1px solid #dcdcdc;
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+.auto-ticker-wrapper:hover .category-pills-scroll-track {
+    animation-play-state: paused;
 }
 
-.search-box input:focus {
-    border-color: var(--primary-red);
-    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
-}
-
-.category-pills {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+@keyframes autoTickerScroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 .cat-pill {
-    background: var(--bg-card);
-    border: 1px solid #dcdcdc;
-    color: var(--color-text-dark);
-    padding: 6px 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 145px;
+    height: 40px;
+    background-color: #ffffff;
+    border: 2px solid var(--primary-red);
+    color: var(--primary-red);
     font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: var(--radius-sm);
+    font-weight: 700;
+    border-radius: 20px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.22s ease-in-out;
+    box-shadow: 0 2px 5px rgba(200, 16, 46, 0.08);
 }
 
 .cat-pill:hover {
-    border-color: var(--primary-red);
-    color: var(--primary-red);
+    background-color: var(--primary-red);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(200, 16, 46, 0.25);
 }
 
 .cat-pill.active {
-    background: var(--primary-red);
-    color: #ffffff;
+    background-color: var(--primary-red) !important;
+    border-color: var(--primary-red) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.35);
+}
+
+body.dark-mode .cat-pill {
+    background-color: #1e1e1e;
     border-color: var(--primary-red);
+    color: #ffffff;
+}
+
+body.dark-mode .cat-pill:hover {
+    background-color: var(--primary-red);
+    color: #ffffff;
+}
+
+.cat-icon {
+    font-size: 0.95rem;
 }
 
 /* ==========================================================================
@@ -346,7 +471,7 @@ body {
     border-top: 2px solid var(--primary-red);
     border-bottom: 2px solid var(--primary-red);
     padding: 8px 0;
-    margin-top: 8px;
+    margin-top: 12px;
 }
 
 .nav-item {
@@ -584,38 +709,147 @@ body {
     border-radius: 4px;
 }
 
+.article-text ul, 
+.article-text ol {
+    margin: 10px 0 10px 24px;
+    padding-left: 12px;
+}
+
+.article-text li {
+    margin-bottom: 6px;
+}
+
 /* ==========================================================================
-   SPEECH CONTROLS
+   ARTICLE READER TOOLBAR
    ========================================================================== */
-.speech-controls-panel {
+.article-reader-toolbar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+    padding: 16px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+}
+
+.reader-control-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--bg-card);
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+body.dark-mode .reader-control-card {
+    border-color: #333333;
+    background-color: #1f1f1f;
+}
+
+.control-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin: 24px 0 16px 0;
-    padding: 10px 16px;
-    background: var(--bg-accent);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    font-weight: 600;
+    gap: 8px;
 }
 
-.speech-title {
-    font-weight: 700;
+.control-icon-svg {
+    width: 16px;
+    height: 16px;
     color: var(--primary-red);
+    flex-shrink: 0;
 }
 
-.speech-speed-select {
-    padding: 4px 8px;
-    border: 1px solid #dcdcdc;
-    border-radius: var(--radius-sm);
+.control-label {
     font-size: 0.85rem;
-    background: var(--bg-card);
-    color: var(--color-text-dark);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--primary-red);
+    line-height: 1;
+}
+
+.control-button-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    height: 34px;
+    padding: 0 14px;
+    background: #ffffff;
+    border: 1.5px solid var(--primary-red);
+    color: var(--primary-red);
+    font-family: var(--font-sans);
+    font-size: 0.85rem; /* Standardized equal font size */
+    font-weight: 700;
+    border-radius: 17px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.toolbar-btn:hover {
+    background: var(--primary-red);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(200, 16, 46, 0.2);
+}
+
+.toolbar-btn.active {
+    background: var(--primary-red);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(200, 16, 46, 0.25);
+}
+
+.speed-dropdown-wrapper {
+    margin-left: auto;
+}
+
+.toolbar-select {
+    height: 34px;
+    padding: 0 10px;
+    border: 1.5px solid var(--primary-red);
+    border-radius: 17px;
+    background: #ffffff;
+    color: var(--primary-red);
+    font-family: var(--font-sans);
+    font-size: 0.85rem; /* Standardized equal font size */
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toolbar-select:hover,
+.toolbar-select:focus {
+    background: var(--primary-red);
+    color: #ffffff;
+}
+
+body.dark-mode .toolbar-btn,
+body.dark-mode .toolbar-select {
+    background: #2a2a2a;
+    color: #ffffff;
+    border-color: var(--primary-red);
+}
+
+body.dark-mode .toolbar-btn:hover,
+body.dark-mode .toolbar-btn.active,
+body.dark-mode .toolbar-select:hover {
+    background: var(--primary-red);
+    color: #ffffff;
 }
 
 /* ==========================================================================
-   ADMIN ACTION BAR & REMOVE SEGMENT BUTTON
+   ADMIN ACTION BAR
    ========================================================================== */
 .action-bar.admin-only {
     margin-top: 20px;
@@ -647,11 +881,6 @@ body {
     box-shadow: 0 2px 8px rgba(200, 16, 46, 0.25);
 }
 
-#deleteQuestionButton:active {
-    transform: translateY(1px);
-}
-
-/* Dark Mode Adjustments */
 body.dark-mode #deleteQuestionButton {
     background-color: #d32f2f;
     border-color: #d32f2f;
@@ -706,7 +935,7 @@ body.dark-mode #deleteQuestionButton:hover {
 }
 
 /* ==========================================================================
-   ADMIN DASHBOARD & FORM BUTTONS
+   ADMIN DASHBOARD & INTEGRATED RICH TEXT EDITOR
    ========================================================================== */
 .admin-section {
     margin-top: 40px;
@@ -775,26 +1004,78 @@ body.dark-mode #deleteQuestionButton:hover {
     outline: none;
 }
 
+.rich-editor-container {
+    border: 1px solid #dcdcdc;
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-card);
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rich-editor-container:focus-within {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+}
+
 .rich-editor-toolbar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: var(--bg-card);
-    padding: 6px 10px;
-    border: 1px solid #dcdcdc;
-    border-bottom: none;
-    border-top-left-radius: var(--radius-sm);
-    border-top-right-radius: var(--radius-sm);
+    gap: 6px;
+    background: #f1f1f1;
+    padding: 6px 12px;
+    border-bottom: 1px solid #dcdcdc;
+}
+
+body.dark-mode .rich-editor-toolbar {
+    background: #282828;
+    border-bottom-color: #444444;
+}
+
+.rich-btn {
+    background: #ffffff;
+    border: 1px solid var(--primary-red);
+    color: var(--primary-red);
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rich-btn:hover {
+    background: var(--primary-red);
+    color: #ffffff;
 }
 
 .rich-editor {
-    min-height: 140px;
-    border: 1px solid #dcdcdc;
-    border-bottom-left-radius: var(--radius-sm);
-    border-bottom-right-radius: var(--radius-sm);
-    padding: 12px 14px;
-    background: var(--bg-card);
+    min-height: 160px;
+    padding: 14px 16px;
     outline: none;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-dark);
+    background-color: var(--bg-card);
+}
+
+.rich-editor ul, 
+.rich-editor ol {
+    margin: 8px 0 8px 24px;
+    padding-left: 8px;
+}
+
+.rich-editor li {
+    margin-bottom: 4px;
+}
+
+.admin-form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
 }
 
 /* ==========================================================================
@@ -841,62 +1122,36 @@ body.dark-mode #deleteQuestionButton:hover {
 }
 
 /* ==========================================================================
-   SEARCH BOX CLEAR BUTTON
-   ========================================================================== */
-.search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.clear-search-btn {
-    position: absolute;
-    right: 10px;
-    background: transparent;
-    border: none;
-    font-size: 1.2rem;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    line-height: 1;
-    padding: 0 4px;
-}
-
-.clear-search-btn:hover {
-    color: var(--primary-red);
-}
-
-/* ==========================================================================
-   FONT RESIZING TOOLBAR
-   ========================================================================== */
-.font-controls-panel {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 18px;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.font-control-title {
-    color: var(--color-text-dark);
-}
-
-/* ==========================================================================
    RESPONSIVE
    ========================================================================== */
 @media (max-width: 800px) {
+    .top-bar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .top-bar-controls {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .top-search-box input {
+        width: 140px;
+    }
+
+    .top-search-box input:focus {
+        width: 170px;
+    }
+
+    .article-reader-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .form-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .search-category-bar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .search-box input {
-        width: 100%;
     }
 
     .admin-form-actions {

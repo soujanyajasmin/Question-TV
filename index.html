@@ -21,13 +21,23 @@
     <header class="newspaper-header">
         <div class="top-bar">
             <div class="issue-details">
-                <span id="headerDate">DATE: --/--/----</span> | <span>LIVE DIGITAL EDITION</span>
+                <span id="headerDate">DATE: --/--/----</span> <span class="top-divider">|</span> <span>LIVE DIGITAL EDITION</span>
             </div>
+            
             <div class="top-bar-controls">
-                <button id="themeToggleBtn" class="btn btn-outline btn-sm">🌙 Dark Mode</button>
+                <div class="top-search-box">
+                    <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search stories...">
+                    <button id="clearSearchBtn" class="clear-search-btn hidden" title="Clear Search">&times;</button>
+                </div>
+
+                <button id="themeToggleBtn" class="btn btn-outline btn-sm top-control-btn">🌙 Dark Mode</button>
                 <div class="auth-controls">
-                    <button id="adminLoginTrigger" class="btn btn-outline btn-sm">Admin Desk Login</button>
-                    <button id="adminLogoutTrigger" class="btn btn-outline btn-sm hidden">Logout (Admin)</button>
+                    <button id="adminLoginTrigger" class="btn btn-outline btn-sm top-control-btn">Admin Desk Login</button>
+                    <button id="adminLogoutTrigger" class="btn btn-outline btn-sm top-control-btn hidden">Logout (Admin)</button>
                 </div>
             </div>
         </div>
@@ -40,18 +50,27 @@
             <p class="tagline">The Interactive Daily Digital News Portal</p>
         </div>
 
-        <!-- SEARCH BAR & CATEGORIES -->
-        <div class="search-category-bar">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Search news stories by keyword...">
-                <button id="clearSearchBtn" class="clear-search-btn hidden" title="Clear Search">&times;</button>
-            </div>
-            <div class="category-pills" id="categoryPills">
-                <button class="cat-pill active" data-category="All">All</button>
-                <button class="cat-pill" data-category="National">National</button>
-                <button class="cat-pill" data-category="Tech">Tech</button>
-                <button class="cat-pill" data-category="Sports">Sports</button>
-                <button class="cat-pill" data-category="Entertainment">Entertainment</button>
+        <div class="auto-ticker-wrapper">
+            <div class="category-pills-scroll-track" id="categoryPills">
+                <button class="cat-pill active" data-category="All"><span class="cat-icon">🌐</span> All</button>
+                <button class="cat-pill" data-category="National"><span class="cat-icon">🇮🇳</span> National</button>
+                <button class="cat-pill" data-category="World"><span class="cat-icon">🌍</span> World</button>
+                <button class="cat-pill" data-category="Politics"><span class="cat-icon">🏛️</span> Politics</button>
+                <button class="cat-pill" data-category="Business"><span class="cat-icon">💼</span> Business</button>
+                <button class="cat-pill" data-category="Sports"><span class="cat-icon">🏆</span> Sports</button>
+                <button class="cat-pill" data-category="Tech"><span class="cat-icon">💻</span> Tech</button>
+                <button class="cat-pill" data-category="Entertainment"><span class="cat-icon">🎬</span> Entertainment</button>
+                <button class="cat-pill" data-category="Local"><span class="cat-icon">📍</span> Local</button>
+
+                <button class="cat-pill" data-category="All"><span class="cat-icon">🌐</span> All</button>
+                <button class="cat-pill" data-category="National"><span class="cat-icon">🇮🇳</span> National</button>
+                <button class="cat-pill" data-category="World"><span class="cat-icon">🌍</span> World</button>
+                <button class="cat-pill" data-category="Politics"><span class="cat-icon">🏛️</span> Politics</button>
+                <button class="cat-pill" data-category="Business"><span class="cat-icon">💼</span> Business</button>
+                <button class="cat-pill" data-category="Sports"><span class="cat-icon">🏆</span> Sports</button>
+                <button class="cat-pill" data-category="Tech"><span class="cat-icon">💻</span> Tech</button>
+                <button class="cat-pill" data-category="Entertainment"><span class="cat-icon">🎬</span> Entertainment</button>
+                <button class="cat-pill" data-category="Local"><span class="cat-icon">📍</span> Local</button>
             </div>
         </div>
 
@@ -77,7 +96,7 @@
                 <button id="currentDayButton" class="btn btn-outline current-day-button hidden">Return to Today</button>
             </div>
 
-            <!-- INTERACTIVE SEGMENT NAVIGATION BAR -->
+            <!-- SEGMENT NAVIGATION BAR -->
             <div class="question-nav-container">
                 <button class="arrow-button" id="previousButton" title="Previous Segment" aria-label="Previous Segment">←</button>
                 <div class="question-pills-wrapper" id="questionPillsWrapper">
@@ -98,8 +117,9 @@
 
                 <h1 id="contentHeading" class="article-headline">Loading News Headline...</h1>
 
+                <!-- BYLINE BAR WITH REPORTER/AGENCY ATTRIBUTION -->
                 <div class="byline-bar">
-                    <span>Published by <strong>Question TV Admin Desk</strong></span>
+                    <span>Published by <strong id="bylineAuthor">Question TV News Desk</strong></span>
                     <span class="divider">•</span>
                     <span id="bylineDate">Daily Issue</span>
                     <span class="divider">•</span>
@@ -115,20 +135,46 @@
                     <div id="contentDescription" class="article-text">News report text and detailed coverage will display here.</div>
                 </div>
 
-                <!-- ENHANCED SPEECH CONTROLS PANEL -->
-                <div class="speech-controls-panel">
-                    <span class="speech-title">🔊 Audio Reader:</span>
-                    <button id="playAudioBtn" class="btn btn-sm btn-outline">▶ Play</button>
-                    <button id="pauseAudioBtn" class="btn btn-sm btn-outline">⏸ Pause</button>
-                    <button id="stopAudioBtn" class="btn btn-sm btn-outline">⏹ Stop</button>
-                    <label for="speechSpeed">Speed:</label>
-                    <select id="speechSpeed" class="speech-speed-select">
-                        <option value="0.75">0.75x</option>
-                        <option value="1" selected>1.0x</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="2">2.0x</option>
-                    </select>
+                <!-- READER TOOLBAR -->
+                <div class="article-reader-toolbar">
+                    <div class="reader-control-card">
+                        <div class="control-header">
+                            <svg class="control-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 7V4h16v3"></path>
+                                <path d="M9 20h6"></path>
+                                <path d="M12 4v16"></path>
+                            </svg>
+                            <span class="control-label">Text Size</span>
+                        </div>
+                        <div class="control-button-group">
+                            <button id="fontSizeDec" class="toolbar-btn" title="Decrease Font Size">A<sup>−</sup></button>
+                            <button id="fontSizeReset" class="toolbar-btn active" title="Reset Font Size">100%</button>
+                            <button id="fontSizeInc" class="toolbar-btn" title="Increase Font Size">A<sup>+</sup></button>
+                        </div>
+                    </div>
+
+                    <div class="reader-control-card">
+                        <div class="control-header">
+                            <svg class="control-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            </svg>
+                            <span class="control-label">Audio Reader</span>
+                        </div>
+                        <div class="control-button-group">
+                            <button id="playAudioBtn" class="toolbar-btn play-btn" title="Play Audio">▶ Play</button>
+                            <button id="pauseAudioBtn" class="toolbar-btn" title="Pause Audio">⏸ Pause</button>
+                            <button id="stopAudioBtn" class="toolbar-btn" title="Stop Audio">⏹ Stop</button>
+                            <div class="speed-dropdown-wrapper">
+                                <select id="speechSpeed" class="toolbar-select" title="Playback Speed">
+                                    <option value="0.75">0.75x</option>
+                                    <option value="1" selected>1.0x</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1.5">1.5x</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ACTION NOTIFICATION AREA -->
@@ -183,19 +229,29 @@
                             <input type="text" id="qTitle" placeholder="Enter news headline..." required />
                         </div>
                         <div class="form-group">
-                            <label for="qCategory">Category</label>
-                            <select id="qCategory" required>
-                                <option value="National">National</option>
-                                <option value="Tech">Tech</option>
-                                <option value="Sports">Sports</option>
-                                <option value="Entertainment">Entertainment</option>
-                            </select>
+                            <label for="qAuthor">Reporter Name / Agency</label>
+                            <input type="text" id="qAuthor" placeholder="e.g. Rahul Sharma / PTI" required />
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="qImage">Image URL</label>
-                        <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="qCategory">Category</label>
+                            <select id="qCategory" required>
+                                <option value="National">National</option>
+                                <option value="World">World</option>
+                                <option value="Politics">Politics</option>
+                                <option value="Business">Business</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Tech">Tech</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Local">Local</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="qImage">Image URL</label>
+                            <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -203,6 +259,7 @@
                         <div class="rich-editor-toolbar">
                             <button type="button" class="btn btn-sm btn-outline" id="richBoldBtn"><b>B</b></button>
                             <button type="button" class="btn btn-sm btn-outline" id="richItalicBtn"><i>I</i></button>
+                            <button type="button" class="btn btn-sm btn-outline" id="richListBtn">• List</button>
                         </div>
                         <div id="richEditor" class="rich-editor" contenteditable="true" placeholder="Enter detailed story coverage..."></div>
                     </div>

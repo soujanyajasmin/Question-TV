@@ -37,6 +37,7 @@ const deleteQuestionButton = document.getElementById("deleteQuestionButton");
 const questionCounter = document.getElementById("questionCounter");
 const headerDate = document.getElementById("headerDate");
 const bylineDate = document.getElementById("bylineDate");
+const bylineAuthor = document.getElementById("bylineAuthor");
 const bylineCategory = document.getElementById("bylineCategory");
 const metaBadge = document.getElementById("metaBadge");
 const viewCountBadge = document.getElementById("viewCountBadge");
@@ -136,25 +137,32 @@ function initTheme() {
     }
 }
 
-// TEXT RESIZING
+// SEGMENTED TEXT RESIZING
 function setupTextResizing() {
     const decBtn = document.getElementById("fontSizeDec");
     const resetBtn = document.getElementById("fontSizeReset");
     const incBtn = document.getElementById("fontSizeInc");
 
-    if (decBtn) decBtn.addEventListener("click", () => adjustFontSize(-0.1));
-    if (resetBtn) resetBtn.addEventListener("click", () => setFontSize(1.15));
-    if (incBtn) incBtn.addEventListener("click", () => adjustFontSize(0.1));
+    if (decBtn) decBtn.addEventListener("click", () => adjustFontSize(-0.1, decBtn));
+    if (resetBtn) resetBtn.addEventListener("click", () => setFontSize(1.15, resetBtn));
+    if (incBtn) incBtn.addEventListener("click", () => adjustFontSize(0.1, incBtn));
 }
 
-function adjustFontSize(delta) {
+function adjustFontSize(delta, activeBtn) {
     articleFontSize = Math.min(Math.max(articleFontSize + delta, 0.85), 1.75);
-    setFontSize(articleFontSize);
+    setFontSize(articleFontSize, activeBtn);
 }
 
-function setFontSize(size) {
+function setFontSize(size, activeBtn) {
     articleFontSize = size;
     if (contentDescription) contentDescription.style.fontSize = `${articleFontSize}rem`;
+
+    document.querySelectorAll(".resizer-btn").forEach(btn => btn.classList.remove("active"));
+    if (activeBtn) activeBtn.classList.add("active");
+    else {
+        const resetBtn = document.getElementById("fontSizeReset");
+        if (resetBtn && size === 1.15) resetBtn.classList.add("active");
+    }
 }
 
 // SEARCH & CATEGORY FILTERING
@@ -193,10 +201,20 @@ function setupSearchAndCategory() {
 
     if (categoryPills) {
         categoryPills.addEventListener("click", (e) => {
-            if (e.target.classList.contains("cat-pill")) {
-                document.querySelectorAll(".cat-pill").forEach(p => p.classList.remove("active"));
-                e.target.classList.add("active");
-                selectedCategory = e.target.getAttribute("data-category") || "All";
+            const pill = e.target.closest(".cat-pill");
+            if (pill) {
+                const targetCat = pill.getAttribute("data-category") || "All";
+                selectedCategory = targetCat;
+
+                // Sync all matching pills across the loop track
+                document.querySelectorAll(".cat-pill").forEach(p => {
+                    if (p.getAttribute("data-category") === targetCat) {
+                        p.classList.add("active");
+                    } else {
+                        p.classList.remove("active");
+                    }
+                });
+
                 applyFilters();
             }
         });
@@ -611,12 +629,13 @@ function setupDraftsSystem() {
 
     if (saveDraftBtn) {
         saveDraftBtn.addEventListener("click", () => {
-            const categorySelect = document.getElementById("qCategory");
+            const categorySelectInput = document.getElementById("qCategory");
             const draft = {
                 date: document.getElementById("qDate") ? document.getElementById("qDate").value : "",
                 number: document.getElementById("qNumber") ? document.getElementById("qNumber").value : "",
                 title: document.getElementById("qTitle") ? document.getElementById("qTitle").value : "",
-                category: categorySelect ? categorySelect.value : "National",
+                author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "",
+                category: categorySelectInput ? categorySelectInput.value : "National",
                 image: document.getElementById("qImage") ? document.getElementById("qImage").value : "",
                 description: richEditor ? richEditor.innerHTML : ""
             };
@@ -636,6 +655,7 @@ function setupDraftsSystem() {
             if (document.getElementById("qDate")) document.getElementById("qDate").value = draft.date || "";
             if (document.getElementById("qNumber")) document.getElementById("qNumber").value = draft.number || "";
             if (document.getElementById("qTitle")) document.getElementById("qTitle").value = draft.title || "";
+            if (document.getElementById("qAuthor")) document.getElementById("qAuthor").value = draft.author || "";
             if (document.getElementById("qCategory")) document.getElementById("qCategory").value = draft.category || "National";
             if (document.getElementById("qImage")) document.getElementById("qImage").value = draft.image || "";
             if (richEditor) richEditor.innerHTML = draft.description || "";
@@ -771,6 +791,10 @@ function displayCurrentQuestion() {
         bylineDate.textContent = `Issue Date: ${current.date || new Date().toISOString().split("T")[0]}`;
     }
 
+    if (bylineAuthor) {
+        bylineAuthor.textContent = current.author || "Question TV News Desk";
+    }
+
     if (bylineCategory) {
         bylineCategory.textContent = `Category: ${current.category || "National"}`;
     }
@@ -800,6 +824,10 @@ function displayPreviousMonthQuestion() {
 
     if (bylineDate) {
         bylineDate.textContent = `Issue Date: ${current.date || "Archive"}`;
+    }
+
+    if (bylineAuthor) {
+        bylineAuthor.textContent = current.author || "Question TV News Desk";
     }
 
     if (bylineCategory) {
@@ -893,13 +921,14 @@ if (addQuestionForm) {
     addQuestionForm.addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const categorySelect = document.getElementById("qCategory");
-        const selectedCategoryVal = categorySelect ? categorySelect.value : "National";
+        const categorySelectInput = document.getElementById("qCategory");
+        const selectedCategoryVal = categorySelectInput ? categorySelectInput.value : "National";
 
         const payload = {
             date: document.getElementById("qDate").value,
             question_number: parseInt(document.getElementById("qNumber").value, 10),
             title: document.getElementById("qTitle").value,
+            author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "Question TV News Desk",
             category: selectedCategoryVal,
             image: document.getElementById("qImage").value,
             description: richEditor ? richEditor.innerHTML : ""
