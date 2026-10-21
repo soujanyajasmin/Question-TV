@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question TV — Digital News Channel</title>
     <meta name="theme-color" content="#c8102e">
+    <!-- WEBSITE FAVICON -->
+    <link rel="icon" type="image/png" href="Assets/image.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,11 +44,14 @@
             </div>
         </div>
 
+        <!-- CLICKABLE MASTHEAD LOGO LINK TO INDEX.HTML -->
         <div class="masthead">
-            <div class="logo">
-                <span class="logo-icon">📺</span>
-                <h1>QUESTION TV</h1>
-            </div>
+            <a href="index.html" class="logo-link" title="Return to Home">
+                <div class="logo">
+                    <img src="Assets/image.png" alt="Question TV Logo" class="brand-logo-img">
+                    <h1>QUESTION TV</h1>
+                </div>
+            </a>
             <p class="tagline">The Interactive Daily Digital News Portal</p>
         </div>
 
@@ -127,7 +132,7 @@
                 </div>
 
                 <div class="content-image-wrapper">
-                    <img id="contentImage" src=" " alt="News Segment Image">
+                    <img id="contentImage" src="Assets/image.png" alt="News Segment Image">
                     <div class="image-caption" id="imageCaption">Interactive Visual Coverage</div>
                 </div>
 
@@ -146,10 +151,10 @@
                             </svg>
                             <span class="control-label">Text Size</span>
                         </div>
-                        <div class="control-button-group">
-                            <button id="fontSizeDec" class="toolbar-btn" title="Decrease Font Size">A<sup>−</sup></button>
-                            <button id="fontSizeReset" class="toolbar-btn active" title="Reset Font Size">100%</button>
-                            <button id="fontSizeInc" class="toolbar-btn" title="Increase Font Size">A<sup>+</sup></button>
+                        <div class="control-button-group resizer-group">
+                            <button id="fontSizeDec" class="toolbar-btn resizer-btn-equal" title="Decrease Font Size">A −</button>
+                            <button id="fontSizeReset" class="toolbar-btn resizer-btn-equal active" title="Reset Font Size">100%</button>
+                            <button id="fontSizeInc" class="toolbar-btn resizer-btn-equal" title="Increase Font Size">A +</button>
                         </div>
                     </div>
 

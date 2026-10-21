@@ -7,6 +7,9 @@ const BASE_URL = window.location.hostname === "127.0.0.1" || window.location.hos
 const API_URL = `${BASE_URL}/questions`;
 const PREVIOUS_MONTH_API_URL = `${BASE_URL}/questions/previous-month`;
 
+// NEWS-DATA.IO API URL (Clean Query)
+const NEWSDATA_API_URL = "https://newsdata.io/api/1/latest?apikey=pub_90ecbf6363124194a0da52b620783d30&language=en";
+
 let questions = [];
 let filteredQuestions = [];
 let previousQuestions = [];
@@ -157,7 +160,7 @@ function setFontSize(size, activeBtn) {
     articleFontSize = size;
     if (contentDescription) contentDescription.style.fontSize = `${articleFontSize}rem`;
 
-    document.querySelectorAll(".resizer-btn").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".resizer-btn-equal").forEach(btn => btn.classList.remove("active"));
     if (activeBtn) activeBtn.classList.add("active");
     else {
         const resetBtn = document.getElementById("fontSizeReset");
@@ -206,7 +209,6 @@ function setupSearchAndCategory() {
                 const targetCat = pill.getAttribute("data-category") || "All";
                 selectedCategory = targetCat;
 
-                // Sync all matching pills across the loop track
                 document.querySelectorAll(".cat-pill").forEach(p => {
                     if (p.getAttribute("data-category") === targetCat) {
                         p.classList.add("active");
@@ -225,10 +227,14 @@ function applyFilters() {
     const sourceList = viewingPreviousMonth ? previousQuestions : questions;
 
     filteredQuestions = sourceList.filter(item => {
-        const matchesCategory = selectedCategory === "All" || (item.category || "National").toLowerCase() === selectedCategory.toLowerCase();
+        const itemCat = (item.category || "National").toLowerCase();
+        const selCat = selectedCategory.toLowerCase();
+
+        const matchesCategory = selCat === "all" || itemCat === selCat;
         const matchesSearch = !searchQuery || 
             (item.title && item.title.toLowerCase().includes(searchQuery)) ||
             (item.description && item.description.toLowerCase().includes(searchQuery));
+            
         return matchesCategory && matchesSearch;
     });
 
@@ -239,13 +245,13 @@ function applyFilters() {
     } else {
         currentIndex = 0;
         if (filteredQuestions.length > 0) displayCurrentQuestion();
-        else renderEmptyState("No matching stories found for your search/filter.");
+        else renderEmptyState("No stories found for this category.");
     }
 }
 
 function renderEmptyState(msg) {
     if (contentHeading) contentHeading.textContent = "No Stories Found";
-    if (contentDescription) contentDescription.innerHTML = `<p>${msg}</p>`;
+    if (contentDescription) contentDescription.innerHTML = `<p style="padding: 20px; text-align: center; color: var(--text-muted);">${msg}</p>`;
     if (contentImage) contentImage.src = "";
     if (questionCounter) questionCounter.textContent = "";
     if (questionPillsWrapper) questionPillsWrapper.innerHTML = "";
@@ -362,7 +368,10 @@ function setupUserInteractionButtons() {
     if (likeBtn) {
         likeBtn.addEventListener("click", () => {
             const storyId = getCurrentStoryId();
-            if (!storyId) return;
+            if (!storyId) {
+                showActionNotification("Please select a valid story first!");
+                return;
+            }
 
             let currentLikes = parseInt(localStorage.getItem(`likes_${storyId}`) || "0", 10);
             currentLikes++;
@@ -378,7 +387,10 @@ function setupUserInteractionButtons() {
     if (bookmarkBtn) {
         bookmarkBtn.addEventListener("click", () => {
             const storyId = getCurrentStoryId();
-            if (!storyId) return;
+            if (!storyId) {
+                showActionNotification("Please select a valid story first!");
+                return;
+            }
 
             const list = filteredQuestions;
             const idx = viewingPreviousMonth ? previousIndex : currentIndex;
@@ -394,10 +406,10 @@ function setupUserInteractionButtons() {
             } else {
                 savedStories.push({
                     id: storyId,
-                    title: currentStory.title,
-                    date: currentStory.date,
-                    image: currentStory.image,
-                    description: currentStory.description
+                    title: currentStory.title || "Untitled Story",
+                    date: currentStory.date || new Date().toISOString().split("T")[0],
+                    image: currentStory.image || "",
+                    description: currentStory.description || ""
                 });
                 localStorage.setItem("savedStories", JSON.stringify(savedStories));
                 showActionNotification("The story is saved");
@@ -754,22 +766,66 @@ function animateArticleUpdate() {
     }, 150);
 }
 
+// SMART LOAD: LOADS LOCAL DB STORIES OR FALLS BACK TO NEWSDATA.IO LIVE NEWS
 async function loadQuestions() {
     try {
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error("Failed to fetch current segments");
+        if (!response.ok) throw new Error("Local API error");
 
         const data = await response.json();
         questions = deduplicateQuestions(data);
 
-        if (questions.length > 0) {
+        // If local database has records, display them; otherwise fetch from NewsData.io
+        if (questions && questions.length > 0) {
             applyFilters();
         } else {
-            renderEmptyState("No news stories published for today's edition yet.");
+            await fetchLiveExternalNews();
         }
     } catch (error) {
-        console.error("Error loading current news segments:", error);
-        renderEmptyState("Unable to load news edition. Verify FastAPI backend.");
+        console.warn("Backend unavailable/empty. Loading live news from NewsData.io...", error);
+        await fetchLiveExternalNews();
+    }
+}
+
+// FETCH LIVE HEADLINES FROM NEWS-DATA.IO & MAP CATEGORIES
+async function fetchLiveExternalNews() {
+    try {
+        const response = await fetch(NEWSDATA_API_URL);
+        if (!response.ok) throw new Error("Failed to fetch NewsData.io feed");
+
+        const data = await response.json();
+        if (data && data.results && data.results.length > 0) {
+            questions = data.results.map((item, index) => {
+                let rawCategory = (item.category && item.category.length > 0) ? item.category[0].toLowerCase() : "top";
+                let mappedCategory = "National";
+
+                if (rawCategory === "technology") mappedCategory = "Tech";
+                else if (rawCategory === "business") mappedCategory = "Business";
+                else if (rawCategory === "sports") mappedCategory = "Sports";
+                else if (rawCategory === "entertainment") mappedCategory = "Entertainment";
+                else if (rawCategory === "politics") mappedCategory = "Politics";
+                else if (rawCategory === "world") mappedCategory = "World";
+
+                return {
+                    id: `api_${index + 1}`,
+                    title: item.title || "Untitled Breaking News",
+                    description: item.description || item.content || "Detailed news report currently unavailable.",
+                    image: item.image_url || "Assets/image.png",
+                    date: item.pubDate ? item.pubDate.split(" ")[0] : new Date().toISOString().split("T")[0],
+                    author: item.source_name || "NewsData Wire",
+                    category: mappedCategory,
+                    question_number: index + 1
+                };
+            });
+
+            showToast("Loaded live news from NewsData.io!", "success");
+            applyFilters();
+        } else {
+            renderEmptyState("No live stories returned from NewsData.io API.");
+        }
+    } catch (err) {
+        console.error("Error connecting to NewsData.io API:", err);
+        renderEmptyState("Unable to load news stories. Please check your network connection.");
     }
 }
 
@@ -782,7 +838,7 @@ function displayCurrentQuestion() {
 
     if (contentHeading) contentHeading.textContent = current.title || `Segment ${num}`;
     if (contentImage) {
-        contentImage.src = current.image || "";
+        contentImage.src = current.image || "Assets/image.png";
         contentImage.alt = current.title || "News segment image";
     }
     if (contentDescription) contentDescription.innerHTML = current.description || "";
@@ -817,7 +873,7 @@ function displayPreviousMonthQuestion() {
 
     if (contentHeading) contentHeading.textContent = current.title || `Segment ${num}`;
     if (contentImage) {
-        contentImage.src = current.image || "";
+        contentImage.src = current.image || "Assets/image.png";
         contentImage.alt = current.title || "News segment image";
     }
     if (contentDescription) contentDescription.innerHTML = current.description || "";

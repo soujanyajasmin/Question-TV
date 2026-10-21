@@ -19,27 +19,33 @@
 }
 
 /* ==========================================================================
-   DARK MODE VARIABLES
+   DARK MODE VARIABLES & COMPREHENSIVE OVERRIDES
    ========================================================================== */
 body.dark-mode {
     --bg-main: #121212;
-    --bg-card: #1e1e1e;
-    --bg-accent: #282828;
+    --bg-card: #181818;
+    --bg-accent: #202020;
     
-    --primary-red: #e53935;
-    --dark-red: #ff6b6b;
-    --border-red: #e53935;
-    --border-subtle: #444444;
+    --primary-red: #ff4d4f;
+    --dark-red: #ff7875;
+    --border-red: #ff4d4f;
+    --border-subtle: #333333;
     
-    --color-text-dark: #e0e0e0;
-    --color-text-muted: #aaaaaa;
+    --color-text-dark: #f0f0f0;
+    --color-text-muted: #b0b0b0;
+    --shadow-paper: 0 10px 30px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 body.dark-mode .newspaper-header,
 body.dark-mode .newspaper-article,
-body.dark-mode .modal-content {
+body.dark-mode .paper-sheet,
+body.dark-mode .admin-section,
+body.dark-mode .modal-content,
+body.dark-mode .reader-control-card,
+body.dark-mode .question-nav-container {
     background-color: var(--bg-card);
     color: var(--color-text-dark);
+    border-color: var(--border-subtle);
 }
 
 body.dark-mode .top-bar {
@@ -49,49 +55,100 @@ body.dark-mode .top-bar {
 body.dark-mode input,
 body.dark-mode select,
 body.dark-mode textarea,
-body.dark-mode .rich-editor {
-    background-color: #2a2a2a;
+body.dark-mode .rich-editor,
+body.dark-mode .comment-form input[type="text"],
+body.dark-mode .comment-form textarea {
+    background-color: #222222;
     color: #ffffff;
     border-color: #444444;
 }
 
+/* RED BORDER FOR SEARCH BAR IN DARK MODE */
+body.dark-mode .top-search-box input {
+    background-color: #222222;
+    color: #ffffff;
+    border: 1.5px solid var(--primary-red);
+}
+
+body.dark-mode .top-search-box input:focus {
+    box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.25);
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #888888;
+}
+
 body.dark-mode .article-text {
-    background-color: #252525;
+    background-color: #1a1a1a;
     color: #e0e0e0;
+    border-left-color: var(--primary-red);
 }
 
 body.dark-mode .action-btn,
 body.dark-mode .q-pill,
-body.dark-mode .arrow-button {
-    background-color: #2a2a2a;
-    color: #e0e0e0;
+body.dark-mode .arrow-button,
+body.dark-mode .toolbar-btn,
+body.dark-mode .toolbar-select {
+    background-color: #222222;
+    color: #f0f0f0;
     border-color: #444444;
 }
 
-body.dark-mode .q-pill.active {
+body.dark-mode .action-btn:hover,
+body.dark-mode .q-pill:hover,
+body.dark-mode .arrow-button:hover,
+body.dark-mode .toolbar-btn:hover,
+body.dark-mode .toolbar-select:hover {
     background-color: var(--primary-red);
     color: #ffffff;
     border-color: var(--primary-red);
 }
 
-body.dark-mode .text-resizer-capsule,
-body.dark-mode .speech-capsule {
-    background-color: #2a2a2a;
+body.dark-mode .q-pill.active,
+body.dark-mode .toolbar-btn.active {
+    background-color: var(--primary-red);
+    color: #ffffff;
+    border-color: var(--primary-red);
+}
+
+body.dark-mode .cat-pill {
+    background-color: #1c1c1c;
+    border-color: var(--primary-red);
+    color: #f0f0f0;
+}
+
+body.dark-mode .cat-pill:hover,
+body.dark-mode .cat-pill.active {
+    background-color: var(--primary-red);
+    color: #ffffff;
+}
+
+body.dark-mode .nav-item {
+    color: #f0f0f0;
+}
+
+body.dark-mode .nav-item.active, 
+body.dark-mode .nav-item:hover {
+    background-color: var(--primary-red);
+    color: #ffffff;
+}
+
+body.dark-mode .byline-bar,
+body.dark-mode .section-header {
+    border-color: #333333;
+}
+
+body.dark-mode .meta-tag {
+    background: rgba(255, 77, 79, 0.15);
+    color: var(--primary-red);
     border-color: #444444;
 }
 
-body.dark-mode .resizer-btn,
-body.dark-mode .speech-btn {
-    color: #e0e0e0;
-}
-
-body.dark-mode .resizer-btn:hover,
-body.dark-mode .speech-btn:hover {
-    background-color: #383838;
-}
-
-body.dark-mode .resizer-divider {
-    background-color: #444444;
+body.dark-mode .logo-link:hover h1 {
+    color: var(--primary-red);
+    text-shadow: 0 0 15px rgba(255, 77, 79, 0.8);
+    transition: all 0.2s ease;
 }
 
 /* ==========================================================================
@@ -230,7 +287,7 @@ body {
 }
 
 /* ==========================================================================
-   HEADER 
+   HEADER & LOGO STYLING
    ========================================================================== */
 .newspaper-header {
     background: var(--bg-card);
@@ -346,7 +403,27 @@ body {
 
 .masthead {
     text-align: center;
-    padding: 22px 0 14px 0;
+    padding: 16px 0 10px 0;
+}
+
+/* LOGO LINK INTERACTION & NO UNDERLINE FIX */
+.logo-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.logo-link:hover .brand-logo-img {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logo-link:hover h1 {
+    color: var(--primary-red);
+    text-shadow: 0 0 2px rgba(200, 16, 46, 0.6);
+    transition: all 0.2s ease;
 }
 
 .masthead .logo {
@@ -356,8 +433,13 @@ body {
     gap: 12px;
 }
 
-.masthead .logo-icon {
-    font-size: 2.2rem;
+.brand-logo-img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 2px solid var(--primary-red);
+    box-shadow: 0 2px 6px rgba(200, 16, 46, 0.15);
 }
 
 .masthead h1 {
@@ -367,6 +449,7 @@ body {
     letter-spacing: 2px;
     color: var(--primary-red);
     text-transform: uppercase;
+    text-decoration: none;
 }
 
 .tagline {
@@ -444,17 +527,6 @@ body {
     border-color: var(--primary-red) !important;
     color: #ffffff !important;
     box-shadow: 0 4px 12px rgba(200, 16, 46, 0.35);
-}
-
-body.dark-mode .cat-pill {
-    background-color: #1e1e1e;
-    border-color: var(--primary-red);
-    color: #ffffff;
-}
-
-body.dark-mode .cat-pill:hover {
-    background-color: var(--primary-red);
-    color: #ffffff;
 }
 
 .cat-icon {
@@ -720,7 +792,7 @@ body.dark-mode .cat-pill:hover {
 }
 
 /* ==========================================================================
-   ARTICLE READER TOOLBAR
+   ARTICLE READER TOOLBAR & EQUAL SIZED RESIZER BUTTONS
    ========================================================================== */
 .article-reader-toolbar {
     display: grid;
@@ -742,11 +814,6 @@ body.dark-mode .cat-pill:hover {
     border-radius: var(--radius-sm);
     padding: 14px 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-body.dark-mode .reader-control-card {
-    border-color: #333333;
-    background-color: #1f1f1f;
 }
 
 .control-header {
@@ -778,6 +845,24 @@ body.dark-mode .reader-control-card {
     flex-wrap: wrap;
 }
 
+.resizer-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resizer-btn-equal {
+    min-width: 72px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    justify-content: center;
+    border-radius: 18px;
+    flex: 0 0 auto;
+}
+
 .toolbar-btn {
     height: 34px;
     padding: 0 14px;
@@ -785,7 +870,7 @@ body.dark-mode .reader-control-card {
     border: 1.5px solid var(--primary-red);
     color: var(--primary-red);
     font-family: var(--font-sans);
-    font-size: 0.85rem; /* Standardized equal font size */
+    font-size: 0.85rem;
     font-weight: 700;
     border-radius: 17px;
     cursor: pointer;
@@ -821,7 +906,7 @@ body.dark-mode .reader-control-card {
     background: #ffffff;
     color: var(--primary-red);
     font-family: var(--font-sans);
-    font-size: 0.85rem; /* Standardized equal font size */
+    font-size: 0.85rem;
     font-weight: 700;
     outline: none;
     cursor: pointer;
@@ -830,20 +915,6 @@ body.dark-mode .reader-control-card {
 
 .toolbar-select:hover,
 .toolbar-select:focus {
-    background: var(--primary-red);
-    color: #ffffff;
-}
-
-body.dark-mode .toolbar-btn,
-body.dark-mode .toolbar-select {
-    background: #2a2a2a;
-    color: #ffffff;
-    border-color: var(--primary-red);
-}
-
-body.dark-mode .toolbar-btn:hover,
-body.dark-mode .toolbar-btn.active,
-body.dark-mode .toolbar-select:hover {
     background: var(--primary-red);
     color: #ffffff;
 }
@@ -879,17 +950,6 @@ body.dark-mode .toolbar-select:hover {
     background-color: var(--dark-red);
     border-color: var(--dark-red);
     box-shadow: 0 2px 8px rgba(200, 16, 46, 0.25);
-}
-
-body.dark-mode #deleteQuestionButton {
-    background-color: #d32f2f;
-    border-color: #d32f2f;
-    color: #ffffff;
-}
-
-body.dark-mode #deleteQuestionButton:hover {
-    background-color: #b71c1c;
-    border-color: #b71c1c;
 }
 
 /* ==========================================================================
@@ -1004,19 +1064,6 @@ body.dark-mode #deleteQuestionButton:hover {
     outline: none;
 }
 
-.rich-editor-container {
-    border: 1px solid #dcdcdc;
-    border-radius: var(--radius-sm);
-    background-color: var(--bg-card);
-    overflow: hidden;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.rich-editor-container:focus-within {
-    border-color: var(--primary-red);
-    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
-}
-
 .rich-editor-toolbar {
     display: flex;
     align-items: center;
@@ -1024,31 +1071,6 @@ body.dark-mode #deleteQuestionButton:hover {
     background: #f1f1f1;
     padding: 6px 12px;
     border-bottom: 1px solid #dcdcdc;
-}
-
-body.dark-mode .rich-editor-toolbar {
-    background: #282828;
-    border-bottom-color: #444444;
-}
-
-.rich-btn {
-    background: #ffffff;
-    border: 1px solid var(--primary-red);
-    color: var(--primary-red);
-    padding: 4px 12px;
-    border-radius: 14px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.rich-btn:hover {
-    background: var(--primary-red);
-    color: #ffffff;
 }
 
 .rich-editor {
