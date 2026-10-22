@@ -9,7 +9,7 @@ const PREVIOUS_MONTH_API_URL = `${BASE_URL}/questions/previous-month`;
 
 // API KEY & SELECTED LANGUAGE CONFIGURATION
 const NEWSDATA_API_KEY = "pub_90ecbf6363124194a0da52b620783d30";
-let selectedLanguage = "en"; // Default: English ('en'), can be 'hi' (Hindi), or 'te' (Telugu)
+let selectedLanguage = "en"; 
 
 let questions = [];
 let filteredQuestions = [];
@@ -813,7 +813,6 @@ function animateArticleUpdate() {
     }, 150);
 }
 
-// COMBINED LOAD WITH NUMERICAL SORTING FIX
 async function loadQuestions() {
     let localQuestions = [];
     try {
@@ -865,7 +864,6 @@ async function loadQuestions() {
     // Combine local and API questions
     questions = deduplicateQuestions([...localQuestions, ...apiQuestions]);
 
-    // SORT NUMERICALLY BY QUESTION NUMBER SO 11 COMES AFTER 10
     questions.sort((a, b) => (parseInt(a.question_number, 10) || 0) - (parseInt(b.question_number, 10) || 0));
 
     if (questions.length > 0) {
