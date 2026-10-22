@@ -7,8 +7,9 @@ const BASE_URL = window.location.hostname === "127.0.0.1" || window.location.hos
 const API_URL = `${BASE_URL}/questions`;
 const PREVIOUS_MONTH_API_URL = `${BASE_URL}/questions/previous-month`;
 
-// NEWS-DATA.IO API URL (Clean Query)
-const NEWSDATA_API_URL = "https://newsdata.io/api/1/latest?apikey=pub_90ecbf6363124194a0da52b620783d30&language=en";
+// API KEY & SELECTED LANGUAGE CONFIGURATION
+const NEWSDATA_API_KEY = "pub_90ecbf6363124194a0da52b620783d30";
+let selectedLanguage = "en"; // Default: English ('en'), can be 'hi' (Hindi), or 'te' (Telugu)
 
 let questions = [];
 let filteredQuestions = [];
@@ -70,6 +71,7 @@ const categoryPills = document.getElementById("categoryPills");
 const commentsList = document.getElementById("commentsList");
 const commentForm = document.getElementById("commentForm");
 const richEditor = document.getElementById("richEditor");
+const langControls = document.getElementById("langControls");
 
 document.addEventListener("DOMContentLoaded", () => {
     initTheme();
@@ -80,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupSavedStoriesModal();
     setupTextResizing();
     setupSearchAndCategory();
+    setupLanguageSelector();
     setupCommentsSystem();
     setupRichTextEditor();
     setupDraftsSystem();
@@ -88,6 +91,33 @@ document.addEventListener("DOMContentLoaded", () => {
     loadQuestions();
     fetchNextQuestionNumber();
 });
+
+// LANGUAGE SELECTION EVENT HANDLER
+function setupLanguageSelector() {
+    if (!langControls) return;
+
+    langControls.addEventListener("click", (e) => {
+        const btn = e.target.closest(".lang-btn");
+        if (btn) {
+            const lang = btn.getAttribute("data-lang");
+            if (lang && lang !== selectedLanguage) {
+                selectedLanguage = lang;
+
+                document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+
+                showToast(`Fetching news in ${getLanguageName(lang)}...`, "info");
+                loadQuestions();
+            }
+        }
+    });
+}
+
+function getLanguageName(code) {
+    if (code === "te") return "Telugu (తెలుగు)";
+    if (code === "hi") return "Hindi (हिन्दी)";
+    return "English";
+}
 
 // TOAST & INLINE ACTION NOTIFICATIONS
 function showToast(message, type = "info") {
@@ -229,23 +259,25 @@ function applyFilters() {
     filteredQuestions = sourceList.filter(item => {
         const itemCat = (item.category || "National").toLowerCase();
         const selCat = selectedCategory.toLowerCase();
+        const itemLang = item.language || "en";
 
+        const matchesLanguage = itemLang === selectedLanguage;
         const matchesCategory = selCat === "all" || itemCat === selCat;
         const matchesSearch = !searchQuery || 
             (item.title && item.title.toLowerCase().includes(searchQuery)) ||
             (item.description && item.description.toLowerCase().includes(searchQuery));
             
-        return matchesCategory && matchesSearch;
+        return matchesLanguage && matchesCategory && matchesSearch;
     });
 
     if (viewingPreviousMonth) {
         previousIndex = 0;
         if (filteredQuestions.length > 0) displayPreviousMonthQuestion();
-        else renderEmptyState("No matching archived stories found.");
+        else renderEmptyState(`No archived stories found for ${getLanguageName(selectedLanguage)}.`);
     } else {
         currentIndex = 0;
         if (filteredQuestions.length > 0) displayCurrentQuestion();
-        else renderEmptyState("No stories found for this category.");
+        else renderEmptyState(`No stories found in ${selectedCategory} category for ${getLanguageName(selectedLanguage)}.`);
     }
 }
 
@@ -462,6 +494,11 @@ function setupAudioSpeechControls() {
 
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
+            
+            if (selectedLanguage === "te") utterance.lang = "te-IN";
+            else if (selectedLanguage === "hi") utterance.lang = "hi-IN";
+            else utterance.lang = "en-US";
+
             if (speedSelect) utterance.rate = parseFloat(speedSelect.value);
             window.speechSynthesis.speak(utterance);
             showToast("Playing story audio...", "info");
@@ -642,12 +679,14 @@ function setupDraftsSystem() {
     if (saveDraftBtn) {
         saveDraftBtn.addEventListener("click", () => {
             const categorySelectInput = document.getElementById("qCategory");
+            const languageSelectInput = document.getElementById("qLanguage");
             const draft = {
                 date: document.getElementById("qDate") ? document.getElementById("qDate").value : "",
                 number: document.getElementById("qNumber") ? document.getElementById("qNumber").value : "",
                 title: document.getElementById("qTitle") ? document.getElementById("qTitle").value : "",
                 author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "",
                 category: categorySelectInput ? categorySelectInput.value : "National",
+                language: languageSelectInput ? languageSelectInput.value : "en",
                 image: document.getElementById("qImage") ? document.getElementById("qImage").value : "",
                 description: richEditor ? richEditor.innerHTML : ""
             };
@@ -669,6 +708,7 @@ function setupDraftsSystem() {
             if (document.getElementById("qTitle")) document.getElementById("qTitle").value = draft.title || "";
             if (document.getElementById("qAuthor")) document.getElementById("qAuthor").value = draft.author || "";
             if (document.getElementById("qCategory")) document.getElementById("qCategory").value = draft.category || "National";
+            if (document.getElementById("qLanguage")) document.getElementById("qLanguage").value = draft.language || "en";
             if (document.getElementById("qImage")) document.getElementById("qImage").value = draft.image || "";
             if (richEditor) richEditor.innerHTML = draft.description || "";
             showToast("Draft loaded into form!", "info");
@@ -677,8 +717,14 @@ function setupDraftsSystem() {
 }
 
 async function fetchNextQuestionNumber() {
-    if (!qDateInput || !qNumberInput) return;
-    const selectedDate = qDateInput.value;
+    if (!qNumberInput) return;
+
+    if (questions && questions.length > 0) {
+        qNumberInput.value = questions.length + 1;
+        return;
+    }
+
+    const selectedDate = qDateInput ? qDateInput.value : "";
     if (!selectedDate) return;
 
     try {
@@ -691,6 +737,7 @@ async function fetchNextQuestionNumber() {
         }
     } catch (error) {
         console.error("Error fetching next segment number:", error);
+        qNumberInput.value = 1;
     }
 }
 
@@ -766,66 +813,66 @@ function animateArticleUpdate() {
     }, 150);
 }
 
-// SMART LOAD: LOADS LOCAL DB STORIES OR FALLS BACK TO NEWSDATA.IO LIVE NEWS
+// COMBINED LOAD WITH NUMERICAL SORTING FIX
 async function loadQuestions() {
+    let localQuestions = [];
     try {
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error("Local API error");
-
-        const data = await response.json();
-        questions = deduplicateQuestions(data);
-
-        // If local database has records, display them; otherwise fetch from NewsData.io
-        if (questions && questions.length > 0) {
-            applyFilters();
-        } else {
-            await fetchLiveExternalNews();
+        if (response.ok) {
+            const data = await response.json();
+            localQuestions = deduplicateQuestions(data);
         }
     } catch (error) {
-        console.warn("Backend unavailable/empty. Loading live news from NewsData.io...", error);
-        await fetchLiveExternalNews();
+        console.warn("Backend API unavailable:", error);
     }
-}
 
-// FETCH LIVE HEADLINES FROM NEWS-DATA.IO & MAP CATEGORIES
-async function fetchLiveExternalNews() {
+    const url = `https://newsdata.io/api/1/latest?apikey=${NEWSDATA_API_KEY}&country=in&language=${selectedLanguage}`;
+    let apiQuestions = [];
     try {
-        const response = await fetch(NEWSDATA_API_URL);
-        if (!response.ok) throw new Error("Failed to fetch NewsData.io feed");
+        const response = await fetch(url);
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.results && data.results.length > 0) {
+                apiQuestions = data.results.map((item, index) => {
+                    let rawCategory = (item.category && item.category.length > 0) ? item.category[0].toLowerCase() : "top";
+                    let mappedCategory = "National";
 
-        const data = await response.json();
-        if (data && data.results && data.results.length > 0) {
-            questions = data.results.map((item, index) => {
-                let rawCategory = (item.category && item.category.length > 0) ? item.category[0].toLowerCase() : "top";
-                let mappedCategory = "National";
+                    if (rawCategory === "technology") mappedCategory = "Tech";
+                    else if (rawCategory === "business") mappedCategory = "Business";
+                    else if (rawCategory === "sports") mappedCategory = "Sports";
+                    else if (rawCategory === "entertainment") mappedCategory = "Entertainment";
+                    else if (rawCategory === "politics") mappedCategory = "Politics";
+                    else if (rawCategory === "world") mappedCategory = "World";
 
-                if (rawCategory === "technology") mappedCategory = "Tech";
-                else if (rawCategory === "business") mappedCategory = "Business";
-                else if (rawCategory === "sports") mappedCategory = "Sports";
-                else if (rawCategory === "entertainment") mappedCategory = "Entertainment";
-                else if (rawCategory === "politics") mappedCategory = "Politics";
-                else if (rawCategory === "world") mappedCategory = "World";
-
-                return {
-                    id: `api_${index + 1}`,
-                    title: item.title || "Untitled Breaking News",
-                    description: item.description || item.content || "Detailed news report currently unavailable.",
-                    image: item.image_url || "Assets/image.png",
-                    date: item.pubDate ? item.pubDate.split(" ")[0] : new Date().toISOString().split("T")[0],
-                    author: item.source_name || "NewsData Wire",
-                    category: mappedCategory,
-                    question_number: index + 1
-                };
-            });
-
-            showToast("Loaded live news from NewsData.io!", "success");
-            applyFilters();
-        } else {
-            renderEmptyState("No live stories returned from NewsData.io API.");
+                    return {
+                        id: `api_${index + 1}`,
+                        title: item.title || "Untitled Breaking News",
+                        description: item.description || item.content || "Detailed news report currently unavailable.",
+                        image: item.image_url || "Assets/image.png",
+                        date: item.pubDate ? item.pubDate.split(" ")[0] : new Date().toISOString().split("T")[0],
+                        author: item.source_name || "NewsData Wire",
+                        category: mappedCategory,
+                        language: selectedLanguage,
+                        question_number: index + 1
+                    };
+                });
+            }
         }
     } catch (err) {
-        console.error("Error connecting to NewsData.io API:", err);
-        renderEmptyState("Unable to load news stories. Please check your network connection.");
+        console.warn("NewsData.io API error:", err);
+    }
+
+    // Combine local and API questions
+    questions = deduplicateQuestions([...localQuestions, ...apiQuestions]);
+
+    // SORT NUMERICALLY BY QUESTION NUMBER SO 11 COMES AFTER 10
+    questions.sort((a, b) => (parseInt(a.question_number, 10) || 0) - (parseInt(b.question_number, 10) || 0));
+
+    if (questions.length > 0) {
+        applyFilters();
+        fetchNextQuestionNumber();
+    } else {
+        renderEmptyState(`No stories available for ${getLanguageName(selectedLanguage)}.`);
     }
 }
 
@@ -978,7 +1025,9 @@ if (addQuestionForm) {
         e.preventDefault();
 
         const categorySelectInput = document.getElementById("qCategory");
+        const languageSelectInput = document.getElementById("qLanguage");
         const selectedCategoryVal = categorySelectInput ? categorySelectInput.value : "National";
+        const selectedLanguageVal = languageSelectInput ? languageSelectInput.value : "en";
 
         const payload = {
             date: document.getElementById("qDate").value,
@@ -986,6 +1035,7 @@ if (addQuestionForm) {
             title: document.getElementById("qTitle").value,
             author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "Question TV News Desk",
             category: selectedCategoryVal,
+            language: selectedLanguageVal,
             image: document.getElementById("qImage").value,
             description: richEditor ? richEditor.innerHTML : ""
         };

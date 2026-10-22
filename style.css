@@ -89,7 +89,8 @@ body.dark-mode .action-btn,
 body.dark-mode .q-pill,
 body.dark-mode .arrow-button,
 body.dark-mode .toolbar-btn,
-body.dark-mode .toolbar-select {
+body.dark-mode .toolbar-select,
+body.dark-mode .lang-btn {
     background-color: #222222;
     color: #f0f0f0;
     border-color: #444444;
@@ -99,14 +100,16 @@ body.dark-mode .action-btn:hover,
 body.dark-mode .q-pill:hover,
 body.dark-mode .arrow-button:hover,
 body.dark-mode .toolbar-btn:hover,
-body.dark-mode .toolbar-select:hover {
+body.dark-mode .toolbar-select:hover,
+body.dark-mode .lang-btn:hover {
     background-color: var(--primary-red);
     color: #ffffff;
     border-color: var(--primary-red);
 }
 
 body.dark-mode .q-pill.active,
-body.dark-mode .toolbar-btn.active {
+body.dark-mode .toolbar-btn.active,
+body.dark-mode .lang-btn.active {
     background-color: var(--primary-red);
     color: #ffffff;
     border-color: var(--primary-red);
@@ -174,7 +177,7 @@ body {
 }
 
 /* ==========================================================================
-   BUTTON STYLES
+   BUTTON STYLES & LANGUAGE SWITCHER
    ========================================================================== */
 .btn {
     font-family: var(--font-sans);
@@ -231,6 +234,18 @@ body {
 .btn-full {
     width: 100%;
     padding: 10px;
+}
+
+.language-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lang-btn.active {
+    background-color: var(--primary-red) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-red) !important;
 }
 
 .action-notification-area {
@@ -339,7 +354,6 @@ body {
     line-height: 1;
 }
 
-/* SEARCH BAR */
 .top-search-box {
     position: relative;
     display: flex;
@@ -632,6 +646,7 @@ body {
     scroll-behavior: smooth;
     padding: 4px 8px;
     flex-grow: 1;
+    min-width: 0;
     width: 100%;
     -webkit-overflow-scrolling: touch;
     -ms-overflow-style: none; 
@@ -792,7 +807,7 @@ body {
 }
 
 /* ==========================================================================
-   ARTICLE READER TOOLBAR & EQUAL SIZED RESIZER BUTTONS
+   ARTICLE READER TOOLBAR 
    ========================================================================== */
 .article-reader-toolbar {
     display: grid;
@@ -900,7 +915,7 @@ body {
 
 .toolbar-select {
     height: 34px;
-    padding: 0 10px;
+    padding: 0 32px 0 12px;
     border: 1.5px solid var(--primary-red);
     border-radius: 17px;
     background: #ffffff;
@@ -911,12 +926,33 @@ body {
     outline: none;
     cursor: pointer;
     transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8102e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
 }
 
-.toolbar-select:hover,
-.toolbar-select:focus {
-    background: var(--primary-red);
-    color: #ffffff;
+body.dark-mode .toolbar-select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff4d4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8102e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+body.dark-mode .form-group select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff4d4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 /* ==========================================================================

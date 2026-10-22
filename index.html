@@ -27,6 +27,13 @@
             </div>
             
             <div class="top-bar-controls">
+                <!-- LANGUAGE SWITCHER BUTTONS -->
+                <div class="language-controls" id="langControls">
+                    <button class="btn btn-outline btn-sm lang-btn active" data-lang="en">English</button>
+                    <button class="btn btn-outline btn-sm lang-btn" data-lang="hi">हिन्दी</button>
+                    <button class="btn btn-outline btn-sm lang-btn" data-lang="te">తెలుగు</button>
+                </div>
+
                 <div class="top-search-box">
                     <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
@@ -254,9 +261,18 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="qImage">Image URL</label>
-                            <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
+                            <label for="qLanguage">Language</label>
+                            <select id="qLanguage" required>
+                                <option value="en" selected>English</option>
+                                <option value="hi">हिन्दी (Hindi)</option>
+                                <option value="te">తెలుగు (Telugu)</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qImage">Image URL</label>
+                        <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
                     </div>
 
                     <div class="form-group">
