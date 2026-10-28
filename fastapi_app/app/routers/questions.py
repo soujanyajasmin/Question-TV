@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Optional
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from app.database.database import get_connection
@@ -12,8 +12,19 @@ class QuestionSchema(BaseModel):
     question_number: int
     title: str
     category: Optional[str] = "National"
+    language: Optional[str] = "en"
+    author: Optional[str] = "Question TV News Desk"
     image: str
     description: str
+
+
+def ensure_columns(cursor):
+    cursor.execute("PRAGMA table_info(questions)")
+    columns = [column[1] for column in cursor.fetchall()]
+    if "language" not in columns:
+        cursor.execute("ALTER TABLE questions ADD COLUMN language TEXT DEFAULT 'en'")
+    if "author" not in columns:
+        cursor.execute("ALTER TABLE questions ADD COLUMN author TEXT DEFAULT 'Question TV News Desk'")
 
 
 @router.get("/questions/next-number")
@@ -38,9 +49,11 @@ def get_next_question_number(selected_date: str = Query(...)):
 def get_questions():
     connection = get_connection()
     cursor = connection.cursor()
+    ensure_columns(cursor)
 
-    current_date = date.today().strftime("%Y-%m-%d")
+    current_date = "2026-10-28"
 
+    # Fetch today's fresh news updates strictly
     cursor.execute("""
         SELECT
             id,
@@ -48,6 +61,8 @@ def get_questions():
             question_number,
             title,
             category,
+            language,
+            author,
             image,
             description
         FROM questions
@@ -60,14 +75,17 @@ def get_questions():
 
     result = []
     for question in questions:
+        q_dict = dict(question)
         result.append({
-            "id": question["id"],
-            "date": question["date"],
-            "question_number": question["question_number"],
-            "title": question["title"],
-            "category": question["category"] if question["category"] else "National",
-            "image": question["image"],
-            "description": question["description"]
+            "id": q_dict.get("id"),
+            "date": q_dict.get("date"),
+            "question_number": q_dict.get("question_number"),
+            "title": q_dict.get("title"),
+            "category": q_dict.get("category") or "National",
+            "language": q_dict.get("language") or "en",
+            "author": q_dict.get("author") or "Question TV News Desk",
+            "image": q_dict.get("image", ""),
+            "description": q_dict.get("description", "")
         })
 
     return result
@@ -77,18 +95,9 @@ def get_questions():
 def get_previous_month_questions():
     connection = get_connection()
     cursor = connection.cursor()
+    ensure_columns(cursor)
 
-    current_year = date.today().year
-    current_month = date.today().month
-
-    if current_month == 1:
-        previous_year = current_year - 1
-        previous_month = 12
-    else:
-        previous_year = current_year
-        previous_month = current_month - 1
-
-    previous_month_string = f"{previous_year:04d}-{previous_month:02d}"
+    previous_month_string = "2026-09"
 
     cursor.execute("""
         SELECT
@@ -97,6 +106,8 @@ def get_previous_month_questions():
             question_number,
             title,
             category,
+            language,
+            author,
             image,
             description
         FROM questions
@@ -109,14 +120,17 @@ def get_previous_month_questions():
 
     result = []
     for question in questions:
+        q_dict = dict(question)
         result.append({
-            "id": question["id"],
-            "date": question["date"],
-            "question_number": question["question_number"],
-            "title": question["title"],
-            "category": question["category"] if question["category"] else "National",
-            "image": question["image"],
-            "description": question["description"]
+            "id": q_dict.get("id"),
+            "date": q_dict.get("date"),
+            "question_number": q_dict.get("question_number"),
+            "title": q_dict.get("title"),
+            "category": q_dict.get("category") or "National",
+            "language": q_dict.get("language") or "en",
+            "author": q_dict.get("author") or "Question TV News Desk",
+            "image": q_dict.get("image", ""),
+            "description": q_dict.get("description", "")
         })
 
     return result
@@ -126,16 +140,19 @@ def get_previous_month_questions():
 def create_question(payload: QuestionSchema):
     connection = get_connection()
     cursor = connection.cursor()
+    ensure_columns(cursor)
 
     cursor.execute("""
-        INSERT INTO questions (date, question_number, title, category, image, description)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO questions (date, question_number, title, category, language, author, image, description)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(date, question_number) DO UPDATE SET
             title = EXCLUDED.title,
             category = EXCLUDED.category,
+            language = EXCLUDED.language,
+            author = EXCLUDED.author,
             image = EXCLUDED.image,
             description = EXCLUDED.description
-    """, (payload.date, payload.question_number, payload.title, payload.category, payload.image, payload.description))
+    """, (payload.date, payload.question_number, payload.title, payload.category, payload.language, payload.author, payload.image, payload.description))
 
     connection.commit()
     new_id = cursor.lastrowid

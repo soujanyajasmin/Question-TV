@@ -93,6 +93,7 @@
     <!-- MAIN CONTAINER -->
     <main class="main-container">
 
+        <!-- 1. NEWS GRID / HIGHLIGHTS SECTION -->
         <section class="news-grid-section paper-sheet" id="newsGridSection">
             <div class="section-header">
                 <div>
@@ -101,86 +102,11 @@
                 </div>
             </div>
             <div id="newsGridContainer" class="news-grid">
-                <!-- Dynamic 12 grid cards render here -->
+                <!-- Dynamic grid cards render here -->
             </div>
         </section>
 
-        <!-- ADMIN DASHBOARD (ACCESSIBLE INDEPENDENTLY WHEN LOGGED IN AS ADMIN) -->
-        <section class="admin-section paper-sheet admin-only hidden" id="adminDashboardSection">
-            <h3>[Admin Desk] Publish News Segment</h3>
-            <form id="addQuestionForm" class="add-form">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="qDate">Publication Date</label>
-                        <input type="date" id="qDate" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="qNumber">Segment Number</label>
-                        <input type="number" id="qNumber" placeholder="e.g. 1" required />
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="qTitle">Headline / News Title</label>
-                        <input type="text" id="qTitle" placeholder="Enter news headline..." required />
-                    </div>
-                    <div class="form-group">
-                        <label for="qAuthor">Reporter Name / Agency</label>
-                        <input type="text" id="qAuthor" placeholder="e.g. Rahul Sharma / PTI" required />
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="qCategory">Category</label>
-                        <select id="qCategory" required>
-                            <option value="National">National</option>
-                            <option value="World">World</option>
-                            <option value="Politics">Politics</option>
-                            <option value="Business">Business</option>
-                            <option value="Sports">Sports</option>
-                            <option value="Tech">Tech</option>
-                            <option value="Entertainment">Entertainment</option>
-                            <option value="Local">Local</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="qLanguage">Language</label>
-                        <select id="qLanguage" required>
-                            <option value="en" selected>English</option>
-                            <option value="hi">हिन्दी (Hindi)</option>
-                            <option value="te">తెలుగు (Telugu)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="qImage">Image URL</label>
-                    <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
-                </div>
-
-                <div class="form-group">
-                    <label>Story Coverage / Report (Rich Text Controls)</label>
-                    <div class="rich-editor-container">
-                        <div class="rich-editor-toolbar">
-                            <button type="button" class="btn btn-sm btn-outline" id="richBoldBtn"><b>B</b></button>
-                            <button type="button" class="btn btn-sm btn-outline" id="richItalicBtn"><i>I</i></button>
-                            <button type="button" class="btn btn-sm btn-outline" id="richListBtn">• List</button>
-                        </div>
-                        <div id="richEditor" class="rich-editor" contenteditable="true" placeholder="Enter detailed story coverage..."></div>
-                    </div>
-                </div>
-
-                <div class="admin-form-actions">
-                    <button type="submit" class="btn btn-primary">Publish News Segment</button>
-                    <button type="button" id="saveDraftBtn" class="btn btn-outline">Save as Draft</button>
-                    <button type="button" id="loadDraftBtn" class="btn btn-outline">Load Saved Draft</button>
-                </div>
-            </form>
-        </section>
-
-        <!-- MAIN EDITION SECTION (HIDDEN BY DEFAULT UNTIL A HIGHLIGHT IS CLICKED) -->
+        <!-- 2. MAIN EDITION / STORY READER SECTION -->
         <section class="current-section paper-sheet hidden" id="editionSection">
             
             <div class="section-header">
@@ -285,6 +211,81 @@
                 </section>
             </article>
 
+        </section>
+
+        <!-- 3. ADMIN DASHBOARD SECTION -->
+        <section class="admin-section paper-sheet admin-only hidden" id="adminDashboardSection">
+            <h3>[Admin Desk] Publish News Segment</h3>
+            <form id="addQuestionForm" class="add-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="qDate">Publication Date</label>
+                        <input type="date" id="qDate" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="qNumber">Segment Number</label>
+                        <input type="number" id="qNumber" placeholder="e.g. 1" required />
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="qTitle">Headline / News Title</label>
+                        <input type="text" id="qTitle" placeholder="Enter news headline..." required />
+                    </div>
+                    <div class="form-group">
+                        <label for="qAuthor">Reporter Name / Agency</label>
+                        <input type="text" id="qAuthor" placeholder="e.g. Rahul Sharma / PTI" required />
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="qCategory">Category</label>
+                        <select id="qCategory" required>
+                            <option value="National">National</option>
+                            <option value="World">World</option>
+                            <option value="Politics">Politics</option>
+                            <option value="Business">Business</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Tech">Tech</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Local">Local</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="qLanguage">Language</label>
+                        <select id="qLanguage" required>
+                            <option value="en" selected>English</option>
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="qImage">Image URL</label>
+                    <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Story Coverage / Report (Rich Text Controls)</label>
+                    <div class="rich-editor-container">
+                        <div class="rich-editor-toolbar">
+                            <button type="button" class="btn btn-sm btn-outline" id="richBoldBtn"><b>B</b></button>
+                            <button type="button" class="btn btn-sm btn-outline" id="richItalicBtn"><i>I</i></button>
+                            <button type="button" class="btn btn-sm btn-outline" id="richListBtn">• List</button>
+                        </div>
+                        <div id="richEditor" class="rich-editor" contenteditable="true" placeholder="Enter detailed story coverage..."></div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <button type="submit" class="btn btn-primary">Publish News Segment</button>
+                    <button type="button" id="saveDraftBtn" class="btn btn-outline">Save as Draft</button>
+                    <button type="button" id="loadDraftBtn" class="btn btn-outline">Load Saved Draft</button>
+                </div>
+            </form>
         </section>
 
     </main>
