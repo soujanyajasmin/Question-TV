@@ -15,6 +15,7 @@ let filteredQuestions = [];
 let previousQuestions = [];
 let currentIndex = 0;
 let viewingPreviousMonth = false;
+let currentSelectedDate = new Date().toISOString().split("T")[0];
 let isAdmin = localStorage.getItem("isAdmin") === "true";
 let searchQuery = "";
 let articleFontSize = 1.15;
@@ -27,6 +28,7 @@ const contentHeading = document.getElementById("contentHeading");
 const contentImage = document.getElementById("contentImage");
 const contentDescription = document.getElementById("contentDescription");
 const previousMonthButton = document.getElementById("previousMonthButton");
+const previousDayButton = document.getElementById("previousDayButton");
 const sectionTitle = document.getElementById("sectionTitle");
 const currentDayButton = document.getElementById("currentDayButton");
 const currentDayButtonNav = document.getElementById("currentDayButtonNav");
@@ -89,7 +91,7 @@ function initApp() {
     updateSavedCount();
     syncUIWithSavedPreferences();
     
-    loadQuestions();
+    loadQuestions(currentSelectedDate);
 }
 
 if (document.readyState === "loading") {
@@ -294,7 +296,9 @@ function applyFilters() {
     }
 
     filteredQuestions = results;
-    renderNewsGrid(filteredQuestions.slice(0, 9), viewingPreviousMonth);
+    // Updated maxLimit: 10 for previous month, 9 for today/yesterday
+    const maxLimit = viewingPreviousMonth ? 10 : 9;
+    renderNewsGrid(filteredQuestions.slice(0, maxLimit), viewingPreviousMonth);
 }
 
 function renderEmptyState(msg) {
@@ -304,7 +308,7 @@ function renderEmptyState(msg) {
 }
 
 function updateHeaderDate() {
-    const todayStr = "2026-10-28";
+    const todayStr = new Date().toISOString().split("T")[0];
     if (headerDate) headerDate.textContent = `DATE: ${todayStr}`;
     if (bylineDate) bylineDate.textContent = `Issue Date: ${todayStr}`;
     if (qDateInput) qDateInput.value = todayStr;
@@ -439,7 +443,7 @@ function setupUserInteractionButtons() {
                 savedStories.push({
                     id: storyId,
                     title: currentStory.title || "Untitled Story",
-                    date: currentStory.date || "2026-10-28",
+                    date: currentStory.date || new Date().toISOString().split("T")[0],
                     image: currentStory.image || "",
                     description: currentStory.description || ""
                 });
@@ -695,7 +699,8 @@ function setupDraftsSystem() {
 
 async function fetchNextQuestionNumber() {
     if (!qNumberInput) return;
-    const dateVal = qDateInput ? qDateInput.value : "2026-10-28";
+    const todayStr = new Date().toISOString().split("T")[0];
+    const dateVal = qDateInput ? qDateInput.value : todayStr;
     
     try {
         const response = await fetch(`${BASE_URL}/questions/next-number?selected_date=${dateVal}`);
@@ -738,7 +743,8 @@ function renderNewsGrid(list, isArchive = false) {
         return;
     }
 
-    const displayList = list.slice(0, 9);
+    const maxLimit = isArchive ? 10 : 9;
+    const displayList = list.slice(0, maxLimit);
 
     displayList.forEach((item, index) => {
         const card = document.createElement("div");
@@ -747,7 +753,7 @@ function renderNewsGrid(list, isArchive = false) {
         const imgSrc = item.image && item.image.trim() !== "" ? item.image : "";
         const title = item.title || "Untitled News Story";
         const category = item.category || selectedCategory;
-        const date = item.date || "2026-10-28";
+        const date = item.date || new Date().toISOString().split("T")[0];
         
         let snippetText = "";
         if (item.description) {
@@ -780,9 +786,8 @@ function renderNewsGrid(list, isArchive = false) {
             displayCurrentQuestion();
             editionSection.scrollIntoView({ behavior: "smooth", block: "start" });
 
-            // Populate the admin form for CRUD updates when admin mode is active
             if (isAdmin) {
-                if (qDateInput) qDateInput.value = item.date || "2026-10-28";
+                if (qDateInput) qDateInput.value = item.date || new Date().toISOString().split("T")[0];
                 if (qNumberInput) qNumberInput.value = item.question_number || (index + 1);
                 if (qTitleInput) qTitleInput.value = item.title || "";
                 if (qAuthorInput) qAuthorInput.value = item.author || "Question TV News Desk";
@@ -797,9 +802,10 @@ function renderNewsGrid(list, isArchive = false) {
     });
 }
 
-async function loadQuestions() {
+async function loadQuestions(dateStr = "") {
     try {
-        const response = await fetch(API_URL);
+        const queryParam = dateStr ? `?selected_date=${dateStr}` : "";
+        const response = await fetch(`${API_URL}${queryParam}`);
         if (response.ok) {
             const data = await response.json();
             questions = deduplicateQuestions(data);
@@ -832,7 +838,7 @@ function displayCurrentQuestion() {
     }
     if (contentDescription) contentDescription.innerHTML = current.description || "";
 
-    if (bylineDate) bylineDate.textContent = `Issue Date: ${current.date || "2026-10-28"}`;
+    if (bylineDate) bylineDate.textContent = `Issue Date: ${current.date || new Date().toISOString().split("T")[0]}`;
     if (bylineAuthor) bylineAuthor.textContent = current.author || "Question TV News Desk";
     if (bylineCategory) bylineCategory.textContent = `Category: ${current.category || selectedCategory}`;
     if (metaBadge) metaBadge.textContent = `DAILY EDITION • STORY ${num}`;
@@ -840,43 +846,67 @@ function displayCurrentQuestion() {
     updateButtonStates();
 }
 
+if (previousDayButton) {
+    previousDayButton.addEventListener("click", function () {
+        viewingPreviousMonth = false;
+        
+        // Automatically calculate yesterday's date (YYYY-MM-DD)
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+        if (currentDayButtonNav) currentDayButtonNav.classList.remove("active");
+        if (previousMonthButton) previousMonthButton.classList.remove("active");
+        previousDayButton.classList.add("active");
+
+        if (sectionTitle) sectionTitle.textContent = `ARCHIVE EDITION: ${yesterdayStr}`;
+        if (currentDayButton) currentDayButton.classList.remove("hidden");
+
+        loadQuestions(yesterdayStr);
+        showToast(`Loaded edition for ${yesterdayStr}`, "success");
+    });
+}
+
 if (previousMonthButton) {
     previousMonthButton.addEventListener("click", async function () {
         try {
-            const response = await fetch(PREVIOUS_MONTH_API_URL);
+            // Dynamically calculate previous month (YYYY-MM) based on current date
+            const now = new Date();
+            now.setDate(1);
+            now.setMonth(now.getMonth() - 1);
+            const prevYearMonth = now.toISOString().slice(0, 7);
+
+            const response = await fetch(`${PREVIOUS_MONTH_API_URL}?target_month=${prevYearMonth}`);
             if (!response.ok) throw new Error("Previous month API error");
 
             const rawData = await response.json();
             previousQuestions = deduplicateQuestions(rawData);
+            
+            viewingPreviousMonth = true;
+            selectedCategory = "All"; 
+            
+            if (categoryPills) {
+                document.querySelectorAll(".cat-pill").forEach(p => {
+                    if (p.getAttribute("data-category") === "All") {
+                        p.classList.add("active");
+                    } else {
+                        p.classList.remove("active");
+                    }
+                });
+            }
+
+            if (currentDayButtonNav) currentDayButtonNav.classList.remove("active");
+            if (previousDayButton) previousDayButton.classList.remove("active");
+            previousMonthButton.classList.add("active");
+
+            if (sectionTitle) sectionTitle.textContent = `ARCHIVE EDITION: ${prevYearMonth}`;
+            if (currentDayButton) currentDayButton.classList.add("hidden");
+            applyFilters();
+            showToast(`Loaded archive for ${prevYearMonth}`, "success");
         } catch (error) {
             console.warn("Previous month API unavailable or failed to connect to database.", error);
             showToast("Failed to fetch archive from database.", "error");
             previousQuestions = [];
-        }
-
-        viewingPreviousMonth = true;
-        selectedCategory = "All"; 
-        
-        if (categoryPills) {
-            document.querySelectorAll(".cat-pill").forEach(p => {
-                if (p.getAttribute("data-category") === "All") {
-                    p.classList.add("active");
-                } else {
-                    p.classList.remove("active");
-                }
-            });
-        }
-
-        if (currentDayButtonNav) currentDayButtonNav.classList.remove("active");
-        if (previousMonthButton) previousMonthButton.classList.add("active");
-
-        if (sectionTitle) sectionTitle.textContent = `ARCHIVE EDITION: SEPTEMBER 2026`;
-        if (currentDayButton) currentDayButton.classList.add("hidden");
-        applyFilters();
-
-        if (qDateInput) {
-            qDateInput.value = "2026-09-25";
-            fetchNextQuestionNumber(); 
         }
     });
 }
@@ -884,10 +914,11 @@ if (previousMonthButton) {
 function resetToCurrentDay() {
     viewingPreviousMonth = false;
     if (currentDayButtonNav) currentDayButtonNav.classList.add("active");
+    if (previousDayButton) previousDayButton.classList.remove("active");
     if (previousMonthButton) previousMonthButton.classList.remove("active");
     if (sectionTitle) sectionTitle.textContent = "STORY READER";
     if (currentDayButton) currentDayButton.classList.add("hidden");
-    loadQuestions();
+    loadQuestions(currentSelectedDate);
 }
 
 if (currentDayButton) currentDayButton.addEventListener("click", resetToCurrentDay);
@@ -919,8 +950,8 @@ if (addQuestionForm) {
             showToast("News segment published/updated successfully!", "success");
             addQuestionForm.reset();
             if (richEditor) richEditor.innerHTML = "";
-            if (qDateInput) qDateInput.value = "2026-10-28";
-            await loadQuestions();
+            if (qDateInput) qDateInput.value = new Date().toISOString().split("T")[0];
+            await loadQuestions(currentSelectedDate);
             await fetchNextQuestionNumber();
         } catch (error) {
             showToast("Failed to publish news segment.", "error");
@@ -938,7 +969,7 @@ if (deleteQuestionButton) {
             const response = await fetch(`${API_URL}/${currentQuestion.id}`, { method: "DELETE" });
             if (!response.ok) throw new Error("Failed to delete segment");
             showToast("Segment removed successfully!", "success");
-            await loadQuestions();
+            await loadQuestions(currentSelectedDate);
             await fetchNextQuestionNumber();
             if (editionSection) editionSection.classList.add("hidden");
         } catch (error) {

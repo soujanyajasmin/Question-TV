@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -46,14 +46,14 @@ def get_next_question_number(selected_date: str = Query(...)):
 
 
 @router.get("/questions")
-def get_questions():
+def get_questions(selected_date: Optional[str] = Query(None)):
     connection = get_connection()
     cursor = connection.cursor()
     ensure_columns(cursor)
 
-    current_date = "2026-10-28"
+    # If no specific date is requested, default to today's live date or latest available date
+    target_date = selected_date if selected_date else date.today().isoformat()
 
-    # Fetch today's fresh news updates strictly
     cursor.execute("""
         SELECT
             id,
@@ -68,9 +68,27 @@ def get_questions():
         FROM questions
         WHERE date = ?
         ORDER BY question_number ASC
-    """, (current_date,))
+    """, (target_date,))
 
     questions = cursor.fetchall()
+    
+    # Fallback: if no stories exist for today yet, fetch the most recent date available in the DB
+    if not questions and not selected_date:
+        cursor.execute("""
+            SELECT DISTINCT date FROM questions ORDER BY date DESC LIMIT 1
+        """)
+        latest_date_row = cursor.fetchone()
+        if latest_date_row:
+            target_date = latest_date_row["date"]
+            cursor.execute("""
+                SELECT
+                    id, date, question_number, title, category, language, author, image, description
+                FROM questions
+                WHERE date = ?
+                ORDER BY question_number ASC
+            """, (target_date,))
+            questions = cursor.fetchall()
+
     connection.close()
 
     result = []
@@ -92,12 +110,17 @@ def get_questions():
 
 
 @router.get("/questions/previous-month")
-def get_previous_month_questions():
+def get_previous_month_questions(target_month: Optional[str] = Query(None)):
     connection = get_connection()
     cursor = connection.cursor()
     ensure_columns(cursor)
 
-    previous_month_string = "2026-09"
+    # Dynamically compute the previous month if not explicitly provided
+    if not target_month:
+        today = date.today()
+        first_day_current_month = today.replace(day=1)
+        last_day_prev_month = first_day_current_month - timedelta(days=1)
+        target_month = last_day_prev_month.strftime("%Y-%m")
 
     cursor.execute("""
         SELECT
@@ -112,8 +135,8 @@ def get_previous_month_questions():
             description
         FROM questions
         WHERE date LIKE ?
-        ORDER BY date ASC, question_number ASC
-    """, (previous_month_string + "%",))
+        ORDER BY date DESC, question_number ASC
+    """, (target_month + "%",))
 
     questions = cursor.fetchall()
     connection.close()
