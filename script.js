@@ -24,6 +24,7 @@ let statusTimeout;
 // DOM ELEMENTS 
 const newsGridContainer = document.getElementById("newsGridContainer") || document.getElementById("newsGrid") || document.getElementById("newsContainer") || document.querySelector(".news-grid");
 const editionSection = document.getElementById("editionSection");
+const pricingSection = document.getElementById("pricingSection");
 const contentHeading = document.getElementById("contentHeading");
 const contentImage = document.getElementById("contentImage");
 const contentDescription = document.getElementById("contentDescription");
@@ -32,6 +33,11 @@ const previousDayButton = document.getElementById("previousDayButton");
 const sectionTitle = document.getElementById("sectionTitle");
 const currentDayButton = document.getElementById("currentDayButton");
 const currentDayButtonNav = document.getElementById("currentDayButtonNav");
+const pricingNavBtn = document.getElementById("pricingNavBtn");
+const backToNewsBtn = document.getElementById("backToNewsBtn");
+const subscribeNowMainBtn = document.getElementById("subscribeNowMainBtn");
+const freeTierSelectBtn = document.getElementById("freeTierSelectBtn");
+
 const addQuestionForm = document.getElementById("addQuestionForm");
 const deleteQuestionButton = document.getElementById("deleteQuestionButton");
 const headerDate = document.getElementById("headerDate");
@@ -49,6 +55,7 @@ const qAuthorInput = document.getElementById("qAuthor");
 const qCategoryInput = document.getElementById("qCategory");
 const qLanguageInput = document.getElementById("qLanguage");
 const qImageInput = document.getElementById("qImage");
+const qLiveVideoInput = document.getElementById("qLiveVideo");
 
 // Auth DOM
 const adminLoginTrigger = document.getElementById("adminLoginTrigger");
@@ -72,6 +79,7 @@ const commentsList = document.getElementById("commentsList");
 const commentForm = document.getElementById("commentForm");
 const richEditor = document.getElementById("richEditor");
 const langControls = document.getElementById("langControls");
+const recommendedSidebarList = document.getElementById("recommendedSidebarList");
 
 // Initialization execution 
 function initApp() {
@@ -88,6 +96,7 @@ function initApp() {
     setupRichTextEditor();
     setupDraftsSystem();
     setupAudioSpeechControls();
+    setupPricingNavigation();
     updateSavedCount();
     syncUIWithSavedPreferences();
     
@@ -98,6 +107,48 @@ if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initApp);
 } else {
     initApp();
+}
+
+function setupPricingNavigation() {
+    if (pricingNavBtn) {
+        pricingNavBtn.addEventListener("click", () => {
+            if (newsGridContainer && newsGridContainer.parentNode) {
+                newsGridContainer.parentNode.style.display = "none";
+            }
+            if (editionSection) editionSection.classList.add("hidden");
+            if (pricingSection) pricingSection.classList.remove("hidden");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    }
+
+    if (backToNewsBtn) {
+        backToNewsBtn.addEventListener("click", resetToMainNewsGrid);
+    }
+
+    if (freeTierSelectBtn) {
+        freeTierSelectBtn.addEventListener("click", () => {
+            localStorage.setItem("isSubscriber", "false");
+            showToast("Switched to Free Edition", "info");
+            resetToMainNewsGrid();
+        });
+    }
+
+    if (subscribeNowMainBtn) {
+        subscribeNowMainBtn.addEventListener("click", () => {
+            localStorage.setItem("isSubscriber", "true");
+            showToast("🎉 Success! Your Question TV Premium Subscription is active.", "success");
+            resetToMainNewsGrid();
+        });
+    }
+}
+
+function resetToMainNewsGrid() {
+    if (pricingSection) pricingSection.classList.add("hidden");
+    if (editionSection) editionSection.classList.add("hidden");
+    if (newsGridContainer && newsGridContainer.parentNode) {
+        newsGridContainer.parentNode.style.display = "block";
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function syncUIWithSavedPreferences() {
@@ -120,6 +171,10 @@ function syncUIWithSavedPreferences() {
             }
         });
     }
+
+    if (qLanguageInput) {
+        qLanguageInput.value = selectedLanguage;
+    }
 }
 
 function setupLanguageSelector() {
@@ -134,11 +189,23 @@ function setupLanguageSelector() {
                 localStorage.setItem("selectedLanguage", lang);
                 document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
+                
+                if (qLanguageInput) {
+                    qLanguageInput.value = lang;
+                }
+
                 showToast(`Switching language to ${getLanguageName(lang)}...`, "info");
                 applyFilters();
+                fetchNextQuestionNumber(); 
             }
         }
     });
+
+    if (qLanguageInput) {
+        qLanguageInput.addEventListener("change", () => {
+            fetchNextQuestionNumber();
+        });
+    }
 }
 
 function getLanguageName(code) {
@@ -296,7 +363,6 @@ function applyFilters() {
     }
 
     filteredQuestions = results;
-    // Updated maxLimit: 10 for previous month, 9 for today/yesterday
     const maxLimit = viewingPreviousMonth ? 10 : 9;
     renderNewsGrid(filteredQuestions.slice(0, maxLimit), viewingPreviousMonth);
 }
@@ -445,7 +511,8 @@ function setupUserInteractionButtons() {
                     title: currentStory.title || "Untitled Story",
                     date: currentStory.date || new Date().toISOString().split("T")[0],
                     image: currentStory.image || "",
-                    description: currentStory.description || ""
+                    description: currentStory.description || "",
+                    live_video: currentStory.live_video || ""
                 });
                 localStorage.setItem("savedStories", JSON.stringify(savedStories));
                 showActionNotification("The story is saved");
@@ -669,6 +736,7 @@ function setupDraftsSystem() {
                 category: document.getElementById("qCategory") ? document.getElementById("qCategory").value : "National",
                 language: document.getElementById("qLanguage") ? document.getElementById("qLanguage").value : "en",
                 image: document.getElementById("qImage") ? document.getElementById("qImage").value : "",
+                live_video: qLiveVideoInput ? qLiveVideoInput.value : "",
                 description: richEditor ? richEditor.innerHTML : ""
             };
             localStorage.setItem("admin_draft", JSON.stringify(draft));
@@ -691,6 +759,7 @@ function setupDraftsSystem() {
             if (document.getElementById("qCategory")) document.getElementById("qCategory").value = draft.category || "National";
             if (document.getElementById("qLanguage")) document.getElementById("qLanguage").value = draft.language || "en";
             if (document.getElementById("qImage")) document.getElementById("qImage").value = draft.image || "";
+            if (qLiveVideoInput) qLiveVideoInput.value = draft.live_video || "";
             if (richEditor) richEditor.innerHTML = draft.description || "";
             showToast("Draft loaded into form!", "info");
         });
@@ -701,9 +770,10 @@ async function fetchNextQuestionNumber() {
     if (!qNumberInput) return;
     const todayStr = new Date().toISOString().split("T")[0];
     const dateVal = qDateInput ? qDateInput.value : todayStr;
+    const langVal = qLanguageInput ? qLanguageInput.value : selectedLanguage;
     
     try {
-        const response = await fetch(`${BASE_URL}/questions/next-number?selected_date=${dateVal}`);
+        const response = await fetch(`${BASE_URL}/questions/next-number?selected_date=${dateVal}&language=${langVal}`);
         if (response.ok) {
             const data = await response.json();
             qNumberInput.value = data.next_question_number || 1;
@@ -713,11 +783,15 @@ async function fetchNextQuestionNumber() {
         console.warn("Could not fetch next question number from API:", err);
     }
     
-    qNumberInput.value = (filteredQuestions && filteredQuestions.length > 0) ? filteredQuestions.length + 1 : 1;
+    const langCount = questions.filter(q => (q.language || "en") === langVal).length;
+    qNumberInput.value = langCount + 1;
 }
 
 if (qDateInput) {
     qDateInput.addEventListener("change", fetchNextQuestionNumber);
+}
+if (qLanguageInput) {
+    qLanguageInput.addEventListener("change", fetchNextQuestionNumber);
 }
 
 function deduplicateQuestions(list) {
@@ -725,7 +799,7 @@ function deduplicateQuestions(list) {
     const seenKeys = new Set();
     const uniqueList = [];
     for (const item of list) {
-        const key = item.id ? `id-${item.id}` : `${item.date}-${item.question_number}`;
+        const key = item.id ? `id-${item.id}` : `${item.date}-${item.question_number}-${item.language || 'en'}`;
         if (!seenKeys.has(key)) {
             seenKeys.add(key);
             uniqueList.push(item);
@@ -781,6 +855,10 @@ function renderNewsGrid(list, isArchive = false) {
         `;
 
         card.addEventListener("click", () => {
+            if (pricingSection) pricingSection.classList.add("hidden");
+            if (newsGridContainer && newsGridContainer.parentNode) {
+                newsGridContainer.parentNode.style.display = "block";
+            }
             if (editionSection) editionSection.classList.remove("hidden");
             currentIndex = index;
             displayCurrentQuestion();
@@ -792,8 +870,9 @@ function renderNewsGrid(list, isArchive = false) {
                 if (qTitleInput) qTitleInput.value = item.title || "";
                 if (qAuthorInput) qAuthorInput.value = item.author || "Question TV News Desk";
                 if (qCategoryInput) qCategoryInput.value = item.category || "National";
-                if (qLanguageInput) qLanguageInput.value = item.language || "en";
+                if (qLanguageInput) qLanguageInput.value = item.language || selectedLanguage;
                 if (qImageInput) qImageInput.value = item.image || "";
+                if (qLiveVideoInput) qLiveVideoInput.value = item.live_video || "";
                 if (richEditor) richEditor.innerHTML = item.description || "";
             }
         });
@@ -819,38 +898,106 @@ async function loadQuestions(dateStr = "") {
     fetchNextQuestionNumber();
 }
 
+async function loadRecommendedSidebar(category, currentId) {
+    if (!recommendedSidebarList) return;
+    try {
+        const response = await fetch(`${BASE_URL}/questions/related/${category}?exclude_id=${currentId || 0}&language=${selectedLanguage}`);
+        if (!response.ok) throw new Error("Failed to fetch recommendations");
+        const related = await response.json();
+
+        if (!related || related.length === 0) {
+            recommendedSidebarList.innerHTML = '<p style="font-size: 0.85rem; color: #666;">No related stories available.</p>';
+            return;
+        }
+
+        recommendedSidebarList.innerHTML = related.map(story => `
+            <div class="recommended-item" data-id="${story.id}" style="display: flex; gap: 12px; margin-bottom: 14px; align-items: center; cursor: pointer; padding-bottom: 10px; border-bottom: 1px solid var(--border-color, #eee);">
+                ${story.image ? `<img src="${story.image}" alt="Thumbnail" style="width: 80px; height: 55px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">` : ""}
+                <div>
+                    <span style="font-size: 0.7rem; color: var(--primary-red); font-weight: 700; display: block; margin-bottom: 2px;">${(story.category || "GENERAL").toUpperCase()}</span>
+                    <h4 style="font-size: 0.85rem; line-height: 1.25; font-family: var(--font-sans); color: var(--color-text, #111);">${story.title}</h4>
+                </div>
+            </div>
+        `).join("");
+
+        recommendedSidebarList.querySelectorAll(".recommended-item").forEach(item => {
+            item.addEventListener("click", () => {
+                const sId = parseInt(item.getAttribute("data-id"), 10);
+                const foundIndex = filteredQuestions.findIndex(q => q.id === sId);
+                if (foundIndex !== -1) {
+                    currentIndex = foundIndex;
+                    displayCurrentQuestion();
+                    window.scrollTo({ top: editionSection.offsetTop - 20, behavior: "smooth" });
+                }
+            });
+        });
+    } catch (err) {
+        console.warn("Could not load recommendations sidebar:", err);
+        recommendedSidebarList.innerHTML = '<p style="font-size: 0.85rem; color: #666;">Unable to load recommendations.</p>';
+    }
+}
+
 function displayCurrentQuestion() {
     if (filteredQuestions.length === 0) return;
 
     const current = filteredQuestions[currentIndex];
     const num = current.question_number || (currentIndex + 1);
     const imgSrc = current.image && current.image.trim() !== "" ? current.image : "";
+    const liveVideoUrl = current.live_video ? current.live_video.trim() : "";
 
     if (contentHeading) contentHeading.textContent = current.title || `Segment ${num}`;
-    if (contentImage) {
-        if (imgSrc) {
-            contentImage.src = imgSrc;
-            contentImage.style.display = "block";
+    
+    const existingVideoContainer = document.getElementById("activeLiveVideoContainer");
+    
+    if (liveVideoUrl) {
+        if (contentImage && contentImage.parentNode) contentImage.parentNode.style.display = "none";
+        
+        if (!existingVideoContainer) {
+            const vidDiv = document.createElement("div");
+            vidDiv.id = "activeLiveVideoContainer";
+            vidDiv.style.cssText = "position:relative; padding-bottom:56.25%; height:0; margin-bottom:24px; background:#000; border-radius:8px; overflow:hidden;";
+            
+            if (liveVideoUrl.endsWith(".m3u8")) {
+                vidDiv.innerHTML = `<video controls autoplay style="position:absolute;top:0;left:0;width:100%;height:100%;"><source src="${liveVideoUrl}" type="application/x-mpegURL"></video>`;
+            } else {
+                vidDiv.innerHTML = `<iframe src="${liveVideoUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe>`;
+            }
+            if (contentImage && contentImage.parentNode && contentImage.parentNode.parentNode) {
+                contentImage.parentNode.parentNode.insertBefore(vidDiv, contentImage.parentNode);
+            }
         } else {
-            contentImage.style.display = "none";
+            existingVideoContainer.style.display = "block";
+            const iframe = existingVideoContainer.querySelector("iframe");
+            if (iframe) iframe.src = liveVideoUrl;
         }
-        contentImage.alt = current.title || "News segment image";
+    } else {
+        if (existingVideoContainer) existingVideoContainer.style.display = "none";
+        if (contentImage && contentImage.parentNode) {
+            contentImage.parentNode.style.display = "block";
+            if (imgSrc) {
+                contentImage.src = imgSrc;
+                contentImage.style.display = "block";
+            } else {
+                contentImage.style.display = "none";
+            }
+            contentImage.alt = current.title || "News segment image";
+        }
     }
-    if (contentDescription) contentDescription.innerHTML = current.description || "";
 
+    if (contentDescription) contentDescription.innerHTML = current.description || "";
     if (bylineDate) bylineDate.textContent = `Issue Date: ${current.date || new Date().toISOString().split("T")[0]}`;
     if (bylineAuthor) bylineAuthor.textContent = current.author || "Question TV News Desk";
     if (bylineCategory) bylineCategory.textContent = `Category: ${current.category || selectedCategory}`;
-    if (metaBadge) metaBadge.textContent = `DAILY EDITION • STORY ${num}`;
+    if (metaBadge) metaBadge.textContent = liveVideoUrl ? "LIVE BROADCAST FEED" : `DAILY EDITION • STORY ${num}`;
 
     updateButtonStates();
+    loadRecommendedSidebar(current.category || "National", current.id || 0);
 }
 
 if (previousDayButton) {
     previousDayButton.addEventListener("click", function () {
         viewingPreviousMonth = false;
         
-        // Automatically calculate yesterday's date (YYYY-MM-DD)
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split("T")[0];
@@ -862,6 +1009,9 @@ if (previousDayButton) {
         if (sectionTitle) sectionTitle.textContent = `ARCHIVE EDITION: ${yesterdayStr}`;
         if (currentDayButton) currentDayButton.classList.remove("hidden");
 
+        const headingEl = document.getElementById("highlightsHeading") || document.querySelector(".news-grid-section h2");
+        if (headingEl) headingEl.textContent = `📰 YESTERDAY'S EDITION HIGHLIGHTS (${yesterdayStr})`;
+
         loadQuestions(yesterdayStr);
         showToast(`Loaded edition for ${yesterdayStr}`, "success");
     });
@@ -870,11 +1020,18 @@ if (previousDayButton) {
 if (previousMonthButton) {
     previousMonthButton.addEventListener("click", async function () {
         try {
-            // Dynamically calculate previous month (YYYY-MM) based on current date
             const now = new Date();
-            now.setDate(1);
-            now.setMonth(now.getMonth() - 1);
-            const prevYearMonth = now.toISOString().slice(0, 7);
+            let year = now.getFullYear();
+            let month = now.getMonth(); 
+
+            month -= 1;
+            if (month < 0) {
+                month = 11;
+                year -= 1;
+            }
+
+            const formattedMonth = String(month + 1).padStart(2, '0');
+            const prevYearMonth = `${year}-${formattedMonth}`; // Returns "2026-09"
 
             const response = await fetch(`${PREVIOUS_MONTH_API_URL}?target_month=${prevYearMonth}`);
             if (!response.ok) throw new Error("Previous month API error");
@@ -901,6 +1058,10 @@ if (previousMonthButton) {
 
             if (sectionTitle) sectionTitle.textContent = `ARCHIVE EDITION: ${prevYearMonth}`;
             if (currentDayButton) currentDayButton.classList.add("hidden");
+
+            const headingEl = document.getElementById("highlightsHeading") || document.querySelector(".news-grid-section h2");
+            if (headingEl) headingEl.textContent = `📰 PREVIOUS MONTH ARCHIVE (${prevYearMonth})`;
+
             applyFilters();
             showToast(`Loaded archive for ${prevYearMonth}`, "success");
         } catch (error) {
@@ -913,11 +1074,19 @@ if (previousMonthButton) {
 
 function resetToCurrentDay() {
     viewingPreviousMonth = false;
+    if (pricingSection) pricingSection.classList.add("hidden");
+    if (newsGridContainer && newsGridContainer.parentNode) {
+        newsGridContainer.parentNode.style.display = "block";
+    }
     if (currentDayButtonNav) currentDayButtonNav.classList.add("active");
     if (previousDayButton) previousDayButton.classList.remove("active");
     if (previousMonthButton) previousMonthButton.classList.remove("active");
-    if (sectionTitle) sectionTitle.textContent = "STORY READER";
+    if (sectionTitle) sectionTitle.textContent = "STORY READER & LIVE BROADCAST";
     if (currentDayButton) currentDayButton.classList.add("hidden");
+
+    const headingEl = document.getElementById("highlightsHeading") || document.querySelector(".news-grid-section h2");
+    if (headingEl) headingEl.textContent = "📰 TODAY'S HIGHLIGHTS & STORIES";
+
     loadQuestions(currentSelectedDate);
 }
 
@@ -927,14 +1096,16 @@ if (currentDayButtonNav) currentDayButtonNav.addEventListener("click", resetToCu
 if (addQuestionForm) {
     addQuestionForm.addEventListener("submit", async function (e) {
         e.preventDefault();
+        
         const payload = {
-            date: document.getElementById("qDate").value,
-            question_number: parseInt(document.getElementById("qNumber").value, 10),
-            title: document.getElementById("qTitle").value,
+            date: document.getElementById("qDate").value || new Date().toISOString().split("T")[0],
+            question_number: parseInt(document.getElementById("qNumber").value, 10) || 1,
+            title: document.getElementById("qTitle").value || "Untitled News",
             author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "Question TV News Desk",
-            category: document.getElementById("qCategory").value,
-            language: document.getElementById("qLanguage").value,
-            image: document.getElementById("qImage").value,
+            category: document.getElementById("qCategory").value || "National",
+            language: document.getElementById("qLanguage").value || selectedLanguage,
+            image: document.getElementById("qImage").value || "",
+            live_video: qLiveVideoInput ? qLiveVideoInput.value.trim() : "",
             description: richEditor ? richEditor.innerHTML : ""
         };
 
@@ -945,16 +1116,22 @@ if (addQuestionForm) {
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error("Failed to create news segment");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || "Failed to create news segment");
+            }
 
             showToast("News segment published/updated successfully!", "success");
             addQuestionForm.reset();
             if (richEditor) richEditor.innerHTML = "";
             if (qDateInput) qDateInput.value = new Date().toISOString().split("T")[0];
+            if (qLanguageInput) qLanguageInput.value = selectedLanguage;
+            
             await loadQuestions(currentSelectedDate);
             await fetchNextQuestionNumber();
         } catch (error) {
-            showToast("Failed to publish news segment.", "error");
+            console.error("Publishing Error:", error);
+            showToast(`Failed to publish: ${error.message}`, "error");
         }
     });
 }

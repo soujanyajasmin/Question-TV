@@ -59,8 +59,10 @@
             <p class="tagline">The Interactive Daily Digital News Portal</p>
         </div>
 
+        <!-- INFINITE CONTINUOUS TICKER  -->
         <div class="auto-ticker-wrapper">
             <div class="category-pills-scroll-track" id="categoryPills">
+                <!-- SET 1 -->
                 <button class="cat-pill active" data-category="All"><span class="cat-icon">🌐</span> All</button>
                 <button class="cat-pill" data-category="National"><span class="cat-icon">🇮🇳</span> National</button>
                 <button class="cat-pill" data-category="World"><span class="cat-icon">🌍</span> World</button>
@@ -71,6 +73,7 @@
                 <button class="cat-pill" data-category="Entertainment"><span class="cat-icon">🎬</span> Entertainment</button>
                 <button class="cat-pill" data-category="Local"><span class="cat-icon">📍</span> Local</button>
 
+                <!-- SET 2 (DUPLICATE FOR SEAMLESS LOOPING) -->
                 <button class="cat-pill" data-category="All"><span class="cat-icon">🌐</span> All</button>
                 <button class="cat-pill" data-category="National"><span class="cat-icon">🇮🇳</span> National</button>
                 <button class="cat-pill" data-category="World"><span class="cat-icon">🌍</span> World</button>
@@ -88,6 +91,7 @@
             <button id="previousDayButton" class="nav-item">Yesterday's Edition</button>
             <button id="previousMonthButton" class="nav-item">Previous Month</button>
             <button id="viewSavedBtn" class="nav-item">🔖 Saved Stories (<span id="savedCount">0</span>)</button>
+            <button id="pricingNavBtn" class="nav-item">⭐ Subscription Plans</button>
         </nav>
     </header>
 
@@ -98,7 +102,7 @@
         <section class="news-grid-section paper-sheet" id="newsGridSection">
             <div class="section-header">
                 <div>
-                    <h2 class="edition-title">📰 TODAY'S HIGHLIGHTS & STORIES</h2>
+                    <h2 class="edition-title" id="highlightsHeading">📰 TODAY'S HIGHLIGHTS & STORIES</h2>
                     <p class="section-subtext">Browse top stories and click any card to read full coverage.</p>
                 </div>
             </div>
@@ -107,111 +111,153 @@
             </div>
         </section>
 
-        <!-- 2. MAIN EDITION / STORY READER SECTION -->
-        <section class="current-section paper-sheet hidden" id="editionSection">
-            
+        <!-- PRICING / SUBSCRIPTION SECTION -->
+        <section class="paper-sheet hidden" id="pricingSection" style="margin-top: 20px;">
             <div class="section-header">
                 <div>
-                    <h2 id="sectionTitle" class="edition-title">STORY READER</h2>
-                    <p id="sectionSubtext" class="section-subtext hidden"></p>
+                    <h2 class="edition-title">⭐ QUESTION TV MEMBERSHIP PLANS</h2>
+                    <p class="section-subtext">Choose the plan that fits your news consumption.</p>
+                </div>
+                <button class="btn btn-outline" id="backToNewsBtn">Back to News</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                <!-- FREE TIER -->
+                <div style="background: var(--bg-card, #fff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; padding: 30px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #666; text-transform: uppercase;">Standard Access</span>
+                        <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin: 10px 0 20px 0;">Free Edition</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 20px;">$0 <span style="font-size: 1rem; font-weight: 400; color: #666;">/ forever</span></div>
+                        <ul style="list-style: none; padding: 0; margin: 0 0 30px 0; line-height: 2.2; color: #444;">
+                            <li>✔️ Access to all daily free news reports</li>
+                            <li>✔️ Multilingual support (English, Hindi, Telugu)</li>
+                            <li>✔️ Standard article search & category filtering</li>
+                            <li>✔️ Reader discussions & comments section</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-outline" id="freeTierSelectBtn" style="font-weight: 600; padding: 12px;">Active Free Plan</button>
+                </div>
+                <!-- PREMIUM VIP TIER -->
+                <div style="background: #fff8f8; border: 2px solid var(--primary-red); border-radius: 12px; padding: 30px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                    <div style="position: absolute; top: -14px; right: 20px; background: var(--primary-red); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase;">Most Popular</div>
+                    <div>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary-red); text-transform: uppercase;">Subscriber Access</span>
+                        <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin: 10px 0 20px 0;">Premium VIP</h3>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary-red); margin-bottom: 20px;">$4.99 <span style="font-size: 1rem; font-weight: 400; color: #666;">/ month</span></div>
+                        <ul style="list-style: none; padding: 0; margin: 0 0 30px 0; line-height: 2.2; color: #444;">
+                            <li>⭐ Unlimited access to all Premium stories</li>
+                            <li>⭐ Uninterrupted live video broadcast feeds</li>
+                            <li>⭐ Zero ad experience & priority news alerts</li>
+                            <li>⭐ Full access to historical monthly archives</li>
+                        </ul>
+                    </div>
+                    <button id="subscribeNowMainBtn" class="btn btn-primary" style="font-weight: 600; padding: 12px; width: 100%;">Subscribe Now ($4.99/mo)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. MAIN EDITION / STORY READER SECTION -->
+        <section class="current-section paper-sheet hidden" id="editionSection">
+            <div class="section-header">
+                <div>
+                    <h2 id="sectionTitle" class="edition-title">STORY READER & LIVE BROADCAST</h2>
                 </div>
                 <button id="currentDayButton" class="btn btn-outline current-day-button hidden">Return to Today</button>
             </div>
 
-            <!-- ARTICLE FRONT PAGE DISPLAY -->
-            <article class="newspaper-article" id="articleCard">
-                <div class="article-meta">
-                    <span class="meta-tag" id="metaBadge">LIVE BROADCAST</span>
-                    <div class="article-meta-right">
-                        <span id="viewCountBadge" class="view-count-badge">👁️ 0 Views</span>
-                    </div>
-                </div>
-
-                <h1 id="contentHeading" class="article-headline">Loading News Headline...</h1>
-
-                <div class="byline-bar">
-                    <span>Published by <strong id="bylineAuthor">Question TV News Desk</strong></span>
-                    <span class="divider">•</span>
-                    <span id="bylineDate">Daily Issue</span>
-                    <span class="divider">•</span>
-                    <span id="bylineCategory" class="byline-category">Category: General</span>
-                </div>
-
-                <div class="content-image-wrapper">
-                    <img id="contentImage" src="Assets/image.png" alt="News Segment Image">
-                    <div class="image-caption" id="imageCaption">Interactive Visual Coverage</div>
-                </div>
-
-                <div class="article-body">
-                    <div id="contentDescription" class="article-text">News report text and detailed coverage will display here.</div>
-                </div>
-
-                <div class="article-reader-toolbar">
-                    <div class="reader-control-card">
-                        <div class="control-header">
-                            <svg class="control-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 7V4h16v3"></path>
-                                <path d="M9 20h6"></path>
-                                <path d="M12 4v16"></path>
-                            </svg>
-                            <span class="control-label">Text Size</span>
-                        </div>
-                        <div class="control-button-group resizer-group">
-                            <button id="fontSizeDec" class="toolbar-btn resizer-btn-equal" title="Decrease Font Size">A −</button>
-                            <button id="fontSizeReset" class="toolbar-btn resizer-btn-equal active" title="Reset Font Size">100%</button>
-                            <button id="fontSizeInc" class="toolbar-btn resizer-btn-equal" title="Increase Font Size">A +</button>
+            <div class="news-split-layout" style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; align-items: start;">
+                <!-- LEFT COLUMN -->
+                <article class="newspaper-article" id="articleCard" style="margin-bottom: 0;">
+                    <div class="article-meta">
+                        <span class="meta-tag" id="metaBadge">LIVE BROADCAST</span>
+                        <div class="article-meta-right">
+                            <span id="viewCountBadge" class="view-count-badge">👁️ 0 Views</span>
                         </div>
                     </div>
 
-                    <div class="reader-control-card">
-                        <div class="control-header">
-                            <svg class="control-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                            </svg>
-                            <span class="control-label">Audio Reader</span>
+                    <h1 id="contentHeading" class="article-headline">Loading News Headline...</h1>
+
+                    <div class="byline-bar">
+                        <span>Published by <strong id="bylineAuthor">Question TV News Desk</strong></span>
+                        <span class="divider">•</span>
+                        <span id="bylineDate">Daily Issue</span>
+                        <span class="divider">•</span>
+                        <span id="bylineCategory" class="byline-category">Category: General</span>
+                    </div>
+
+                    <div class="content-image-wrapper">
+                        <img id="contentImage" src="Assets/image.png" alt="News Segment Image">
+                        <div class="image-caption" id="imageCaption">Interactive Visual Coverage</div>
+                    </div>
+
+                    <div class="article-body">
+                        <div id="contentDescription" class="article-text">News report text and detailed coverage will display here.</div>
+                    </div>
+
+                    <div class="article-reader-toolbar">
+                        <div class="reader-control-card">
+                            <div class="control-header">
+                                <span class="control-label">Text Size</span>
+                            </div>
+                            <div class="control-button-group resizer-group">
+                                <button id="fontSizeDec" class="toolbar-btn resizer-btn-equal" title="Decrease Font Size">A −</button>
+                                <button id="fontSizeReset" class="toolbar-btn resizer-btn-equal active" title="Reset Font Size">100%</button>
+                                <button id="fontSizeInc" class="toolbar-btn resizer-btn-equal" title="Increase Font Size">A +</button>
+                            </div>
                         </div>
-                        <div class="control-button-group">
-                            <button id="playAudioBtn" class="toolbar-btn play-btn" title="Play Audio">▶ Play</button>
-                            <button id="pauseAudioBtn" class="toolbar-btn" title="Pause Audio">⏸ Pause</button>
-                            <button id="stopAudioBtn" class="toolbar-btn" title="Stop Audio">⏹ Stop</button>
-                            <div class="speed-dropdown-wrapper">
-                                <select id="speechSpeed" class="toolbar-select" title="Playback Speed">
-                                    <option value="0.75">0.75x</option>
-                                    <option value="1" selected>1.0x</option>
-                                    <option value="1.25">1.25x</option>
-                                    <option value="1.5">1.5x</option>
-                                </select>
+
+                        <div class="reader-control-card">
+                            <div class="control-header">
+                                <span class="control-label">Audio Reader</span>
+                            </div>
+                            <div class="control-button-group">
+                                <button id="playAudioBtn" class="toolbar-btn play-btn" title="Play Audio">▶ Play</button>
+                                <button id="pauseAudioBtn" class="toolbar-btn" title="Pause Audio">⏸ Pause</button>
+                                <button id="stopAudioBtn" class="toolbar-btn" title="Stop Audio">⏹ Stop</button>
+                                <div class="speed-dropdown-wrapper">
+                                    <select id="speechSpeed" class="toolbar-select" title="Playback Speed">
+                                        <option value="0.75">0.75x</option>
+                                        <option value="1" selected>1.0x</option>
+                                        <option value="1.25">1.25x</option>
+                                        <option value="1.5">1.5x</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="action-notification-area">
-                    <span id="actionStatusMessage" class="action-status-message"></span>
-                </div>
+                    <div class="action-notification-area">
+                        <span id="actionStatusMessage" class="action-status-message"></span>
+                    </div>
 
-                <div class="user-actions-row">
-                    <button id="likeBtn" class="action-btn">❤️ <span id="likeCount">0</span> Likes</button>
-                    <button id="bookmarkBtn" class="action-btn">🔖 Save Story</button>
-                    <button id="shareBtn" class="action-btn">🔗 Share Link</button>
-                </div>
+                    <div class="user-actions-row">
+                        <button id="likeBtn" class="action-btn">❤️ <span id="likeCount">0</span> Likes</button>
+                        <button id="bookmarkBtn" class="action-btn">🔖 Save Story</button>
+                        <button id="shareBtn" class="action-btn">🔗 Share Link</button>
+                    </div>
 
-                <div class="action-bar admin-only hidden">
-                    <button id="deleteQuestionButton" class="btn btn-danger">Remove Segment</button>
-                </div>
+                    <div class="action-bar admin-only hidden">
+                        <button id="deleteQuestionButton" class="btn btn-danger">Remove Segment</button>
+                    </div>
 
-                <section class="comments-section">
-                    <h3>💬 Reader Discussion</h3>
-                    <form id="commentForm" class="comment-form">
-                        <input type="text" id="commentAuthor" placeholder="Your Name" required>
-                        <textarea id="commentText" placeholder="Share your thoughts on this story..." rows="3" required></textarea>
-                        <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
-                    </form>
-                    <div id="commentsList" class="comments-list"></div>
-                </section>
-            </article>
+                    <section class="comments-section">
+                        <h3>💬 Reader Discussion</h3>
+                        <form id="commentForm" class="comment-form">
+                            <input type="text" id="commentAuthor" placeholder="Your Name" required>
+                            <textarea id="commentText" placeholder="Share your thoughts on this story..." rows="3" required></textarea>
+                            <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
+                        </form>
+                        <div id="commentsList" class="comments-list"></div>
+                    </section>
+                </article>
 
+                <!-- RIGHT COLUMN -->
+                <aside class="recommended-sidebar" style="background: var(--bg-card, #f9f9f9); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color, #e0e0e0); position: sticky; top: 20px;">
+                    <h3 style="font-family: var(--font-serif); font-size: 1.2rem; border-bottom: 2px solid var(--primary-red); padding-bottom: 8px; margin-bottom: 16px; color: var(--primary-red);">Recommended</h3>
+                    <div id="recommendedSidebarList">
+                        <p style="font-size: 0.85rem; color: #666; font-style: italic;">Loading recommendations...</p>
+                    </div>
+                </aside>
+            </div>
         </section>
 
         <!-- 3. ADMIN DASHBOARD SECTION -->
@@ -264,9 +310,15 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="qImage">Image URL</label>
-                    <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="qImage">Image URL</label>
+                        <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="qLiveVideo">Live Video Stream / Embed URL (Optional)</label>
+                        <input type="url" id="qLiveVideo" placeholder="https://... (.m3u8, mp4, iframe)" />
+                    </div>
                 </div>
 
                 <div class="form-group">

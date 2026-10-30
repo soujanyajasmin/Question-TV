@@ -1,15 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database.models import create_questions_table, insert_previous_month_questions
+from app.database.database import init_db
 from app.routers import questions
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize table structure and seed September archive data
-    create_questions_table()
-    insert_previous_month_questions()
+    #initialize database tables, migrations, and sample data on startup
+    init_db()
     yield
 
 
