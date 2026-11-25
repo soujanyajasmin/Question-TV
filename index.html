@@ -120,37 +120,37 @@
                 </div>
                 <button class="btn btn-outline" id="backToNewsBtn">Back to News</button>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+            <div class="pricing-grid">
                 <!-- FREE TIER -->
-                <div style="background: var(--bg-card, #fff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; padding: 30px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="pricing-card">
                     <div>
-                        <span style="font-size: 0.8rem; font-weight: 700; color: #666; text-transform: uppercase;">Standard Access</span>
-                        <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin: 10px 0 20px 0;">Free Edition</h3>
-                        <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 20px;">$0 <span style="font-size: 1rem; font-weight: 400; color: #666;">/ forever</span></div>
-                        <ul style="list-style: none; padding: 0; margin: 0 0 30px 0; line-height: 2.2; color: #444;">
+                        <span class="pricing-tier-label">Standard Access</span>
+                        <h3 class="pricing-title">Free Edition</h3>
+                        <div class="pricing-price">$0 <span class="pricing-period">/ forever</span></div>
+                        <ul class="pricing-features">
                             <li>✔️ Access to all daily free news reports</li>
                             <li>✔️ Multilingual support (English, Hindi, Telugu)</li>
-                            <li>✔️ Standard article search & category filtering</li>
-                            <li>✔️ Reader discussions & comments section</li>
+                            <li>✔️ Standard article search &amp; category filtering</li>
+                            <li>✔️ Reader discussions &amp; comments section</li>
                         </ul>
                     </div>
-                    <button class="btn btn-outline" id="freeTierSelectBtn" style="font-weight: 600; padding: 12px;">Active Free Plan</button>
+                    <button class="btn btn-outline pricing-btn" id="freeTierSelectBtn">Active Free Plan</button>
                 </div>
                 <!-- PREMIUM VIP TIER -->
-                <div style="background: #fff8f8; border: 2px solid var(--primary-red); border-radius: 12px; padding: 30px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
-                    <div style="position: absolute; top: -14px; right: 20px; background: var(--primary-red); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase;">Most Popular</div>
+                <div class="pricing-card pricing-card-vip">
+                    <div class="vip-badge">Most Popular</div>
                     <div>
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary-red); text-transform: uppercase;">Subscriber Access</span>
-                        <h3 style="font-family: var(--font-serif); font-size: 1.8rem; margin: 10px 0 20px 0;">Premium VIP</h3>
-                        <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary-red); margin-bottom: 20px;">$4.99 <span style="font-size: 1rem; font-weight: 400; color: #666;">/ month</span></div>
-                        <ul style="list-style: none; padding: 0; margin: 0 0 30px 0; line-height: 2.2; color: #444;">
+                        <span class="pricing-tier-label vip-accent">Subscriber Access</span>
+                        <h3 class="pricing-title">Premium VIP</h3>
+                        <div class="pricing-price vip-accent">$4.99 <span class="pricing-period">/ month</span></div>
+                        <ul class="pricing-features">
                             <li>⭐ Unlimited access to all Premium stories</li>
                             <li>⭐ Uninterrupted live video broadcast feeds</li>
-                            <li>⭐ Zero ad experience & priority news alerts</li>
+                            <li>⭐ Zero ad experience &amp; priority news alerts</li>
                             <li>⭐ Full access to historical monthly archives</li>
                         </ul>
                     </div>
-                    <button id="subscribeNowMainBtn" class="btn btn-primary" style="font-weight: 600; padding: 12px; width: 100%;">Subscribe Now ($4.99/mo)</button>
+                    <button id="subscribeNowMainBtn" class="btn btn-primary pricing-btn">Subscribe Now ($4.99/mo)</button>
                 </div>
             </div>
         </section>
@@ -303,17 +303,24 @@
                     <div class="form-group">
                         <label for="qLanguage">Language</label>
                         <select id="qLanguage" required>
-                            <option value="en" selected>English</option>
+                            <option value="en">English</option>
                             <option value="hi">हिन्दी (Hindi)</option>
-                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="te" selected>తెలుగు (Telugu)</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="qImage">Image URL</label>
-                        <input type="url" id="qImage" placeholder="https://example.com/image.jpg" required />
+                        <label for="qImageFile">Upload Image from Laptop</label>
+                        <input type="file" id="qImageFile" accept="image/*" class="form-control" />
+                        <input type="hidden" id="qImage" />
+                        
+                        <!-- INSTANT IMAGE PREVIEW CONTAINER -->
+                        <div id="imagePreviewContainer" style="margin-top: 10px; display: none;">
+                            <span style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 4px;">Selected Image Preview:</span>
+                            <img id="imagePreview" src="" alt="Selected Image Preview" style="max-width: 100%; max-height: 200px; border-radius: 6px; border: 1px solid #ccc; object-fit: cover;" />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="qLiveVideo">Live Video Stream / Embed URL (Optional)</label>

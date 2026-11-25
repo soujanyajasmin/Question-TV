@@ -7,7 +7,7 @@ const BASE_URL = window.location.hostname === "127.0.0.1" || window.location.hos
 const API_URL = `${BASE_URL}/questions`;
 const PREVIOUS_MONTH_API_URL = `${BASE_URL}/questions/previous-month`;
 
-let selectedLanguage = localStorage.getItem("selectedLanguage") || "en"; 
+let selectedLanguage = localStorage.getItem("selectedLanguage") || "te"; 
 let selectedCategory = localStorage.getItem("selectedCategory") || "All";
 
 let questions = [];
@@ -55,7 +55,10 @@ const qAuthorInput = document.getElementById("qAuthor");
 const qCategoryInput = document.getElementById("qCategory");
 const qLanguageInput = document.getElementById("qLanguage");
 const qImageInput = document.getElementById("qImage");
+const qImageFileInput = document.getElementById("qImageFile");
 const qLiveVideoInput = document.getElementById("qLiveVideo");
+const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+const imagePreview = document.getElementById("imagePreview");
 
 // Auth DOM
 const adminLoginTrigger = document.getElementById("adminLoginTrigger");
@@ -81,6 +84,16 @@ const richEditor = document.getElementById("richEditor");
 const langControls = document.getElementById("langControls");
 const recommendedSidebarList = document.getElementById("recommendedSidebarList");
 
+// Helper to convert laptop file to Base64
+function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+    });
+}
+
 // Initialization execution 
 function initApp() {
     initTheme();
@@ -97,6 +110,7 @@ function initApp() {
     setupDraftsSystem();
     setupAudioSpeechControls();
     setupPricingNavigation();
+    setupImagePreviewListeners();
     updateSavedCount();
     syncUIWithSavedPreferences();
     
@@ -107,6 +121,23 @@ if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initApp);
 } else {
     initApp();
+}
+
+function setupImagePreviewListeners() {
+    if (qImageFileInput) {
+        qImageFileInput.addEventListener("change", async function () {
+            if (this.files && this.files[0]) {
+                const base64Str = await readFileAsBase64(this.files[0]);
+                if (qImageInput) qImageInput.value = base64Str;
+                if (imagePreview) imagePreview.src = base64Str;
+                if (imagePreviewContainer) imagePreviewContainer.style.display = "block";
+            } else {
+                if (qImageInput) qImageInput.value = "";
+                if (imagePreview) imagePreview.src = "";
+                if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
+            }
+        });
+    }
 }
 
 function setupPricingNavigation() {
@@ -727,7 +758,12 @@ function setupDraftsSystem() {
     const loadDraftBtn = document.getElementById("loadDraftBtn");
 
     if (saveDraftBtn) {
-        saveDraftBtn.addEventListener("click", () => {
+        saveDraftBtn.addEventListener("click", async () => {
+            let imgVal = qImageInput ? qImageInput.value.trim() : "";
+            if (qImageFileInput && qImageFileInput.files.length > 0) {
+                imgVal = await readFileAsBase64(qImageFileInput.files[0]);
+            }
+
             const draft = {
                 date: document.getElementById("qDate") ? document.getElementById("qDate").value : "",
                 number: document.getElementById("qNumber") ? document.getElementById("qNumber").value : "",
@@ -735,7 +771,7 @@ function setupDraftsSystem() {
                 author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "",
                 category: document.getElementById("qCategory") ? document.getElementById("qCategory").value : "National",
                 language: document.getElementById("qLanguage") ? document.getElementById("qLanguage").value : "en",
-                image: document.getElementById("qImage") ? document.getElementById("qImage").value : "",
+                image: imgVal,
                 live_video: qLiveVideoInput ? qLiveVideoInput.value : "",
                 description: richEditor ? richEditor.innerHTML : ""
             };
@@ -758,9 +794,17 @@ function setupDraftsSystem() {
             if (document.getElementById("qAuthor")) document.getElementById("qAuthor").value = draft.author || "";
             if (document.getElementById("qCategory")) document.getElementById("qCategory").value = draft.category || "National";
             if (document.getElementById("qLanguage")) document.getElementById("qLanguage").value = draft.language || "en";
-            if (document.getElementById("qImage")) document.getElementById("qImage").value = draft.image || "";
+            if (qImageInput) qImageInput.value = draft.image || "";
             if (qLiveVideoInput) qLiveVideoInput.value = draft.live_video || "";
             if (richEditor) richEditor.innerHTML = draft.description || "";
+            
+            if (draft.image) {
+                if (imagePreview) imagePreview.src = draft.image;
+                if (imagePreviewContainer) imagePreviewContainer.style.display = "block";
+            } else {
+                if (imagePreview) imagePreview.src = "";
+                if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
+            }
             showToast("Draft loaded into form!", "info");
         });
     }
@@ -874,6 +918,14 @@ function renderNewsGrid(list, isArchive = false) {
                 if (qImageInput) qImageInput.value = item.image || "";
                 if (qLiveVideoInput) qLiveVideoInput.value = item.live_video || "";
                 if (richEditor) richEditor.innerHTML = item.description || "";
+                
+                if (item.image) {
+                    if (imagePreview) imagePreview.src = item.image;
+                    if (imagePreviewContainer) imagePreviewContainer.style.display = "block";
+                } else {
+                    if (imagePreview) imagePreview.src = "";
+                    if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
+                }
             }
         });
 
@@ -1031,7 +1083,7 @@ if (previousMonthButton) {
             }
 
             const formattedMonth = String(month + 1).padStart(2, '0');
-            const prevYearMonth = `${year}-${formattedMonth}`; // Returns "2026-09"
+            const prevYearMonth = `${year}-${formattedMonth}`;
 
             const response = await fetch(`${PREVIOUS_MONTH_API_URL}?target_month=${prevYearMonth}`);
             if (!response.ok) throw new Error("Previous month API error");
@@ -1097,6 +1149,17 @@ if (addQuestionForm) {
     addQuestionForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         
+        let finalImage = qImageInput ? qImageInput.value.trim() : "";
+        
+        if (qImageFileInput && qImageFileInput.files.length > 0) {
+            try {
+                finalImage = await readFileAsBase64(qImageFileInput.files[0]);
+            } catch (fileErr) {
+                showToast("Error processing laptop image file.", "error");
+                return;
+            }
+        }
+        
         const payload = {
             date: document.getElementById("qDate").value || new Date().toISOString().split("T")[0],
             question_number: parseInt(document.getElementById("qNumber").value, 10) || 1,
@@ -1104,7 +1167,7 @@ if (addQuestionForm) {
             author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "Question TV News Desk",
             category: document.getElementById("qCategory").value || "National",
             language: document.getElementById("qLanguage").value || selectedLanguage,
-            image: document.getElementById("qImage").value || "",
+            image: finalImage,
             live_video: qLiveVideoInput ? qLiveVideoInput.value.trim() : "",
             description: richEditor ? richEditor.innerHTML : ""
         };
@@ -1123,9 +1186,12 @@ if (addQuestionForm) {
 
             showToast("News segment published/updated successfully!", "success");
             addQuestionForm.reset();
+            if (qImageInput) qImageInput.value = "";
             if (richEditor) richEditor.innerHTML = "";
             if (qDateInput) qDateInput.value = new Date().toISOString().split("T")[0];
             if (qLanguageInput) qLanguageInput.value = selectedLanguage;
+            if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
+            if (imagePreview) imagePreview.src = "";
             
             await loadQuestions(currentSelectedDate);
             await fetchNextQuestionNumber();
