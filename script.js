@@ -7,7 +7,7 @@ const BASE_URL = window.location.hostname === "127.0.0.1" || window.location.hos
 const API_URL = `${BASE_URL}/questions`;
 const PREVIOUS_MONTH_API_URL = `${BASE_URL}/questions/previous-month`;
 
-let selectedLanguage = localStorage.getItem("selectedLanguage") || "te"; 
+let selectedLanguage = localStorage.getItem("selectedLanguage") || "te";
 let selectedCategory = localStorage.getItem("selectedCategory") || "All";
 
 let questions = [];
@@ -15,18 +15,21 @@ let filteredQuestions = [];
 let previousQuestions = [];
 let currentIndex = 0;
 let viewingPreviousMonth = false;
-let currentSelectedDate = new Date().toISOString().split("T")[0];
+let currentSelectedDate = getLocalDateString();
 let isAdmin = localStorage.getItem("isAdmin") === "true";
 let searchQuery = "";
 let articleFontSize = 1.15;
 let statusTimeout;
+let autoSyncTime = true;
 
-// DOM ELEMENTS 
+// DOM ELEMENTS
 const newsGridContainer = document.getElementById("newsGridContainer") || document.getElementById("newsGrid") || document.getElementById("newsContainer") || document.querySelector(".news-grid");
 const editionSection = document.getElementById("editionSection");
 const pricingSection = document.getElementById("pricingSection");
 const contentHeading = document.getElementById("contentHeading");
 const contentImage = document.getElementById("contentImage");
+const contentVideoWrapper = document.getElementById("contentVideoWrapper");
+const contentVideo = document.getElementById("contentVideo");
 const contentDescription = document.getElementById("contentDescription");
 const previousMonthButton = document.getElementById("previousMonthButton");
 const previousDayButton = document.getElementById("previousDayButton");
@@ -49,16 +52,21 @@ const viewCountBadge = document.getElementById("viewCountBadge");
 const actionStatusMessage = document.getElementById("actionStatusMessage");
 
 const qDateInput = document.getElementById("qDate");
-const qNumberInput = document.getElementById("qNumber");
+const qDistrictInput = document.getElementById("qDistrict");
+const qTimeInput = document.getElementById("qTime");
 const qTitleInput = document.getElementById("qTitle");
 const qAuthorInput = document.getElementById("qAuthor");
 const qCategoryInput = document.getElementById("qCategory");
 const qLanguageInput = document.getElementById("qLanguage");
 const qImageInput = document.getElementById("qImage");
 const qImageFileInput = document.getElementById("qImageFile");
-const qLiveVideoInput = document.getElementById("qLiveVideo");
 const imagePreviewContainer = document.getElementById("imagePreviewContainer");
 const imagePreview = document.getElementById("imagePreview");
+
+const qVideoInput = document.getElementById("qVideo");
+const qVideoFileInput = document.getElementById("qVideoFile");
+const videoPreviewContainer = document.getElementById("videoPreviewContainer");
+const videoPreview = document.getElementById("videoPreview");
 
 // Auth DOM
 const adminLoginTrigger = document.getElementById("adminLoginTrigger");
@@ -84,6 +92,40 @@ const richEditor = document.getElementById("richEditor");
 const langControls = document.getElementById("langControls");
 const recommendedSidebarList = document.getElementById("recommendedSidebarList");
 
+function getLocalDateString(dateObj = new Date()) {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function getCurrentTimeString(dateObj = new Date()) {
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+}
+
+function syncLiveDateAndTime() {
+    const now = new Date();
+    const currentDateStr = getLocalDateString(now);
+    const currentTimeStr = getCurrentTimeString(now);
+
+    if (currentSelectedDate !== currentDateStr) {
+        currentSelectedDate = currentDateStr;
+    }
+
+    if (headerDate) headerDate.textContent = `DATE: ${currentDateStr}`;
+    if (qDateInput) qDateInput.value = currentDateStr;
+    if (autoSyncTime && qTimeInput) {
+        qTimeInput.value = currentTimeStr;
+    }
+}
+
+function startLiveClock() {
+    syncLiveDateAndTime();
+    setInterval(syncLiveDateAndTime, 1000);
+}
+
 // Helper to convert laptop file to Base64
 function readFileAsBase64(file) {
     return new Promise((resolve, reject) => {
@@ -94,11 +136,12 @@ function readFileAsBase64(file) {
     });
 }
 
-// Initialization execution 
+// Initialization execution
 function initApp() {
     initTheme();
-    updateHeaderDate();
+    startLiveClock();
     applyRolePermissions();
+    setupTimeInputListeners();
     setupAuthEventListeners();
     setupUserInteractionButtons();
     setupSavedStoriesModal();
@@ -110,10 +153,10 @@ function initApp() {
     setupDraftsSystem();
     setupAudioSpeechControls();
     setupPricingNavigation();
-    setupImagePreviewListeners();
+    setupMediaPreviewListeners();
     updateSavedCount();
     syncUIWithSavedPreferences();
-    
+
     loadQuestions(currentSelectedDate);
 }
 
@@ -123,7 +166,30 @@ if (document.readyState === "loading") {
     initApp();
 }
 
-function setupImagePreviewListeners() {
+function setupTimeInputListeners() {
+    if (qTimeInput) {
+        qTimeInput.addEventListener("input", () => {
+            autoSyncTime = false;
+        });
+        qTimeInput.addEventListener("change", () => {
+            autoSyncTime = false;
+        });
+    }
+}
+
+function updateVideoPreview(src) {
+    if (!videoPreviewContainer || !videoPreview) return;
+    if (src && src.trim() !== "") {
+        videoPreview.src = src.trim();
+        videoPreviewContainer.style.display = "block";
+    } else {
+        videoPreview.removeAttribute("src");
+        videoPreview.load();
+        videoPreviewContainer.style.display = "none";
+    }
+}
+
+function setupMediaPreviewListeners() {
     if (qImageFileInput) {
         qImageFileInput.addEventListener("change", async function () {
             if (this.files && this.files[0]) {
@@ -135,6 +201,19 @@ function setupImagePreviewListeners() {
                 if (qImageInput) qImageInput.value = "";
                 if (imagePreview) imagePreview.src = "";
                 if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
+            }
+        });
+    }
+
+    if (qVideoFileInput) {
+        qVideoFileInput.addEventListener("change", async function () {
+            if (this.files && this.files[0]) {
+                const base64Video = await readFileAsBase64(this.files[0]);
+                if (qVideoInput) qVideoInput.value = base64Video;
+                updateVideoPreview(base64Video);
+            } else {
+                if (qVideoInput) qVideoInput.value = "";
+                updateVideoPreview("");
             }
         });
     }
@@ -220,23 +299,16 @@ function setupLanguageSelector() {
                 localStorage.setItem("selectedLanguage", lang);
                 document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
-                
+
                 if (qLanguageInput) {
                     qLanguageInput.value = lang;
                 }
 
                 showToast(`Switching language to ${getLanguageName(lang)}...`, "info");
                 applyFilters();
-                fetchNextQuestionNumber(); 
             }
         }
     });
-
-    if (qLanguageInput) {
-        qLanguageInput.addEventListener("change", () => {
-            fetchNextQuestionNumber();
-        });
-    }
 }
 
 function getLanguageName(code) {
@@ -372,7 +444,7 @@ function applyFilters() {
     }
 
     let langFiltered = sourceList.filter(item => {
-        const itemLang = item.language || "en";
+        const itemLang = item.language || "te";
         return itemLang === selectedLanguage;
     });
 
@@ -380,8 +452,9 @@ function applyFilters() {
     if (searchQuery) {
         results = langFiltered.filter(item => {
             return (item.title && item.title.toLowerCase().includes(searchQuery)) ||
-                   (item.description && item.description.toLowerCase().includes(searchQuery)) ||
-                   (item.category && item.category.toLowerCase().includes(searchQuery));
+                (item.description && item.description.toLowerCase().includes(searchQuery)) ||
+                (item.category && item.category.toLowerCase().includes(searchQuery)) ||
+                (item.district && item.district.toLowerCase().includes(searchQuery));
         });
     } else if (selectedCategory === "All") {
         results = langFiltered;
@@ -404,19 +477,14 @@ function renderEmptyState(msg) {
     }
 }
 
-function updateHeaderDate() {
-    const todayStr = new Date().toISOString().split("T")[0];
-    if (headerDate) headerDate.textContent = `DATE: ${todayStr}`;
-    if (bylineDate) bylineDate.textContent = `Issue Date: ${todayStr}`;
-    if (qDateInput) qDateInput.value = todayStr;
-}
-
 function applyRolePermissions() {
     const adminElements = document.querySelectorAll(".admin-only");
     if (isAdmin) {
         adminElements.forEach(el => el.classList.remove("hidden"));
         if (adminLoginTrigger) adminLoginTrigger.classList.add("hidden");
         if (adminLogoutTrigger) adminLogoutTrigger.classList.remove("hidden");
+        autoSyncTime = true;
+        syncLiveDateAndTime();
     } else {
         adminElements.forEach(el => el.classList.add("hidden"));
         if (adminLoginTrigger) adminLoginTrigger.classList.remove("hidden");
@@ -461,7 +529,7 @@ function getCurrentStoryId() {
     const list = filteredQuestions;
     if (!list || list.length === 0 || !list[currentIndex]) return null;
     const story = list[currentIndex];
-    return story.id ? `story_${story.id}` : `story_${story.date}_${story.question_number}`;
+    return story.id ? `story_${story.id}` : `story_${story.date}_${story.time || "00:00"}_${currentIndex}`;
 }
 
 function incrementAndRenderViews(storyId) {
@@ -540,10 +608,12 @@ function setupUserInteractionButtons() {
                 savedStories.push({
                     id: storyId,
                     title: currentStory.title || "Untitled Story",
-                    date: currentStory.date || new Date().toISOString().split("T")[0],
+                    date: currentStory.date || getLocalDateString(),
+                    time: currentStory.time || "",
+                    district: currentStory.district || "",
                     image: currentStory.image || "",
-                    description: currentStory.description || "",
-                    live_video: currentStory.live_video || ""
+                    video: currentStory.video || "",
+                    description: currentStory.description || ""
                 });
                 localStorage.setItem("savedStories", JSON.stringify(savedStories));
                 showActionNotification("The story is saved");
@@ -559,13 +629,13 @@ function setupUserInteractionButtons() {
         shareBtn.addEventListener("click", () => {
             if (filteredQuestions.length === 0) return;
             const currentStory = filteredQuestions[currentIndex];
-            const segNum = currentStory.question_number || (currentIndex + 1);
-            const shareUrl = `${window.location.origin + window.location.pathname}?segment=${segNum}`;
+            const storyParam = currentStory.id || (currentIndex + 1);
+            const shareUrl = `${window.location.origin + window.location.pathname}?story=${storyParam}`;
 
             navigator.clipboard.writeText(shareUrl).then(() => {
                 showActionNotification("The link is copied");
             }).catch(() => {
-                prompt("Copy this segment link:", shareUrl);
+                prompt("Copy this story link:", shareUrl);
             });
         });
     }
@@ -590,7 +660,7 @@ function setupAudioSpeechControls() {
 
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            
+
             if (selectedLanguage === "te") utterance.lang = "te-IN";
             else if (selectedLanguage === "hi") utterance.lang = "hi-IN";
             else utterance.lang = "en-US";
@@ -704,7 +774,7 @@ function renderSavedStoriesModal() {
         item.innerHTML = `
             <div class="saved-story-info">
                 <h4>${story.title || "Untitled Story"}</h4>
-                <small>Date: ${story.date || "N/A"}</small>
+                <small>Date: ${story.date || "N/A"}${story.district ? ` • ${story.district}` : ""}</small>
             </div>
             <div class="saved-story-actions">
                 <button class="btn btn-sm btn-primary read-saved-btn">Read</button>
@@ -735,9 +805,30 @@ function loadSavedStoryIntoView(story) {
     if (contentImage) {
         contentImage.src = story.image || "";
         contentImage.alt = story.title || "Saved Story Image";
+        contentImage.style.display = story.image ? "block" : "none";
+    }
+    if (contentVideoWrapper && contentVideo) {
+        if (story.video && story.video.trim() !== "") {
+            contentVideo.src = story.video.trim();
+            contentVideoWrapper.classList.remove("hidden");
+        } else {
+            contentVideo.removeAttribute("src");
+            contentVideo.load();
+            contentVideoWrapper.classList.add("hidden");
+        }
     }
     if (contentDescription) contentDescription.innerHTML = story.description || "";
-    if (bylineDate) bylineDate.textContent = `Saved Issue Date: ${story.date || "N/A"}`;
+    if (bylineDate) {
+        const metaItems = [
+            story.date ? `📅 ${story.date}` : "",
+            story.time ? `🕒 ${story.time}` : "",
+            story.district ? `📍 ${story.district}` : ""
+        ].filter(Boolean);
+
+        bylineDate.innerHTML = metaItems.length > 0
+            ? metaItems.map(item => `<span class="byline-meta-item">${item}</span>`).join("")
+            : `<span class="byline-meta-item">Saved Issue</span>`;
+    }
     if (metaBadge) metaBadge.textContent = "SAVED READING LIST";
 
     window.scrollTo({ top: editionSection.offsetTop - 20, behavior: "smooth" });
@@ -764,15 +855,21 @@ function setupDraftsSystem() {
                 imgVal = await readFileAsBase64(qImageFileInput.files[0]);
             }
 
+            let vidVal = qVideoInput ? qVideoInput.value.trim() : "";
+            if (qVideoFileInput && qVideoFileInput.files.length > 0) {
+                vidVal = await readFileAsBase64(qVideoFileInput.files[0]);
+            }
+
             const draft = {
-                date: document.getElementById("qDate") ? document.getElementById("qDate").value : "",
-                number: document.getElementById("qNumber") ? document.getElementById("qNumber").value : "",
-                title: document.getElementById("qTitle") ? document.getElementById("qTitle").value : "",
-                author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "",
-                category: document.getElementById("qCategory") ? document.getElementById("qCategory").value : "National",
-                language: document.getElementById("qLanguage") ? document.getElementById("qLanguage").value : "en",
+                date: qDateInput ? qDateInput.value : "",
+                district: qDistrictInput ? qDistrictInput.value : "",
+                time: qTimeInput ? qTimeInput.value : getCurrentTimeString(),
+                title: qTitleInput ? qTitleInput.value : "",
+                author: qAuthorInput ? qAuthorInput.value : "",
+                category: qCategoryInput ? qCategoryInput.value : "National",
+                language: qLanguageInput ? qLanguageInput.value : "te",
                 image: imgVal,
-                live_video: qLiveVideoInput ? qLiveVideoInput.value : "",
+                video: vidVal,
                 description: richEditor ? richEditor.innerHTML : ""
             };
             localStorage.setItem("admin_draft", JSON.stringify(draft));
@@ -788,16 +885,18 @@ function setupDraftsSystem() {
                 return;
             }
             const draft = JSON.parse(draftRaw);
-            if (document.getElementById("qDate")) document.getElementById("qDate").value = draft.date || "";
-            if (document.getElementById("qNumber")) document.getElementById("qNumber").value = draft.number || "";
-            if (document.getElementById("qTitle")) document.getElementById("qTitle").value = draft.title || "";
-            if (document.getElementById("qAuthor")) document.getElementById("qAuthor").value = draft.author || "";
-            if (document.getElementById("qCategory")) document.getElementById("qCategory").value = draft.category || "National";
-            if (document.getElementById("qLanguage")) document.getElementById("qLanguage").value = draft.language || "en";
+            autoSyncTime = false;
+            if (qDateInput) qDateInput.value = draft.date || getLocalDateString();
+            if (qDistrictInput) qDistrictInput.value = draft.district || "";
+            if (qTimeInput) qTimeInput.value = draft.time || getCurrentTimeString();
+            if (qTitleInput) qTitleInput.value = draft.title || "";
+            if (qAuthorInput) qAuthorInput.value = draft.author || "";
+            if (qCategoryInput) qCategoryInput.value = draft.category || "National";
+            if (qLanguageInput) qLanguageInput.value = draft.language || "te";
             if (qImageInput) qImageInput.value = draft.image || "";
-            if (qLiveVideoInput) qLiveVideoInput.value = draft.live_video || "";
+            if (qVideoInput) qVideoInput.value = draft.video || "";
             if (richEditor) richEditor.innerHTML = draft.description || "";
-            
+
             if (draft.image) {
                 if (imagePreview) imagePreview.src = draft.image;
                 if (imagePreviewContainer) imagePreviewContainer.style.display = "block";
@@ -805,37 +904,11 @@ function setupDraftsSystem() {
                 if (imagePreview) imagePreview.src = "";
                 if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
             }
+
+            updateVideoPreview(draft.video || "");
             showToast("Draft loaded into form!", "info");
         });
     }
-}
-
-async function fetchNextQuestionNumber() {
-    if (!qNumberInput) return;
-    const todayStr = new Date().toISOString().split("T")[0];
-    const dateVal = qDateInput ? qDateInput.value : todayStr;
-    const langVal = qLanguageInput ? qLanguageInput.value : selectedLanguage;
-    
-    try {
-        const response = await fetch(`${BASE_URL}/questions/next-number?selected_date=${dateVal}&language=${langVal}`);
-        if (response.ok) {
-            const data = await response.json();
-            qNumberInput.value = data.next_question_number || 1;
-            return;
-        }
-    } catch (err) {
-        console.warn("Could not fetch next question number from API:", err);
-    }
-    
-    const langCount = questions.filter(q => (q.language || "en") === langVal).length;
-    qNumberInput.value = langCount + 1;
-}
-
-if (qDateInput) {
-    qDateInput.addEventListener("change", fetchNextQuestionNumber);
-}
-if (qLanguageInput) {
-    qLanguageInput.addEventListener("change", fetchNextQuestionNumber);
 }
 
 function deduplicateQuestions(list) {
@@ -843,7 +916,7 @@ function deduplicateQuestions(list) {
     const seenKeys = new Set();
     const uniqueList = [];
     for (const item of list) {
-        const key = item.id ? `id-${item.id}` : `${item.date}-${item.question_number}-${item.language || 'en'}`;
+        const key = item.id ? `id-${item.id}` : `${item.date}-${item.title}-${item.language || "te"}`;
         if (!seenKeys.has(key)) {
             seenKeys.add(key);
             uniqueList.push(item);
@@ -867,12 +940,13 @@ function renderNewsGrid(list, isArchive = false) {
     displayList.forEach((item, index) => {
         const card = document.createElement("div");
         card.className = "news-grid-card";
-        
+
         const imgSrc = item.image && item.image.trim() !== "" ? item.image : "";
-        const title = item.title || "Untitled News Story";
+        const title = item.title || "Untitled News";
         const category = item.category || selectedCategory;
-        const date = item.date || new Date().toISOString().split("T")[0];
-        
+        const date = item.date || getLocalDateString();
+        const metaRight = item.district ? `${date} • ${item.district}` : date;
+
         let snippetText = "";
         if (item.description) {
             const tempDiv = document.createElement("div");
@@ -891,7 +965,7 @@ function renderNewsGrid(list, isArchive = false) {
             <div class="news-grid-body">
                 <div class="news-grid-meta">
                     <span>${category}</span>
-                    <span>${date}</span>
+                    <span>${metaRight}</span>
                 </div>
                 <h3 class="news-grid-title">${title}</h3>
                 <p class="news-grid-snippet">${snippetText}</p>
@@ -909,16 +983,18 @@ function renderNewsGrid(list, isArchive = false) {
             editionSection.scrollIntoView({ behavior: "smooth", block: "start" });
 
             if (isAdmin) {
-                if (qDateInput) qDateInput.value = item.date || new Date().toISOString().split("T")[0];
-                if (qNumberInput) qNumberInput.value = item.question_number || (index + 1);
+                autoSyncTime = false;
+                if (qDateInput) qDateInput.value = item.date || getLocalDateString();
+                if (qDistrictInput) qDistrictInput.value = item.district || "";
+                if (qTimeInput) qTimeInput.value = item.time || getCurrentTimeString();
                 if (qTitleInput) qTitleInput.value = item.title || "";
                 if (qAuthorInput) qAuthorInput.value = item.author || "Question TV News Desk";
                 if (qCategoryInput) qCategoryInput.value = item.category || "National";
                 if (qLanguageInput) qLanguageInput.value = item.language || selectedLanguage;
                 if (qImageInput) qImageInput.value = item.image || "";
-                if (qLiveVideoInput) qLiveVideoInput.value = item.live_video || "";
+                if (qVideoInput) qVideoInput.value = item.video || "";
                 if (richEditor) richEditor.innerHTML = item.description || "";
-                
+
                 if (item.image) {
                     if (imagePreview) imagePreview.src = item.image;
                     if (imagePreviewContainer) imagePreviewContainer.style.display = "block";
@@ -926,6 +1002,8 @@ function renderNewsGrid(list, isArchive = false) {
                     if (imagePreview) imagePreview.src = "";
                     if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
                 }
+
+                updateVideoPreview(item.video || "");
             }
         });
 
@@ -947,7 +1025,6 @@ async function loadQuestions(dateStr = "") {
     }
 
     applyFilters();
-    fetchNextQuestionNumber();
 }
 
 async function loadRecommendedSidebar(category, currentId) {
@@ -993,54 +1070,50 @@ function displayCurrentQuestion() {
     if (filteredQuestions.length === 0) return;
 
     const current = filteredQuestions[currentIndex];
-    const num = current.question_number || (currentIndex + 1);
     const imgSrc = current.image && current.image.trim() !== "" ? current.image : "";
-    const liveVideoUrl = current.live_video ? current.live_video.trim() : "";
+    const vidSrc = current.video && current.video.trim() !== "" ? current.video.trim() : "";
 
-    if (contentHeading) contentHeading.textContent = current.title || `Segment ${num}`;
-    
-    const existingVideoContainer = document.getElementById("activeLiveVideoContainer");
-    
-    if (liveVideoUrl) {
-        if (contentImage && contentImage.parentNode) contentImage.parentNode.style.display = "none";
-        
-        if (!existingVideoContainer) {
-            const vidDiv = document.createElement("div");
-            vidDiv.id = "activeLiveVideoContainer";
-            vidDiv.style.cssText = "position:relative; padding-bottom:56.25%; height:0; margin-bottom:24px; background:#000; border-radius:8px; overflow:hidden;";
-            
-            if (liveVideoUrl.endsWith(".m3u8")) {
-                vidDiv.innerHTML = `<video controls autoplay style="position:absolute;top:0;left:0;width:100%;height:100%;"><source src="${liveVideoUrl}" type="application/x-mpegURL"></video>`;
-            } else {
-                vidDiv.innerHTML = `<iframe src="${liveVideoUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe>`;
-            }
-            if (contentImage && contentImage.parentNode && contentImage.parentNode.parentNode) {
-                contentImage.parentNode.parentNode.insertBefore(vidDiv, contentImage.parentNode);
-            }
+    if (contentHeading) contentHeading.textContent = current.title || "News Headline";
+
+    if (contentImage && contentImage.parentNode) {
+        contentImage.parentNode.style.display = "block";
+        if (imgSrc) {
+            contentImage.src = imgSrc;
+            contentImage.style.display = "block";
         } else {
-            existingVideoContainer.style.display = "block";
-            const iframe = existingVideoContainer.querySelector("iframe");
-            if (iframe) iframe.src = liveVideoUrl;
+            contentImage.style.display = "none";
         }
-    } else {
-        if (existingVideoContainer) existingVideoContainer.style.display = "none";
-        if (contentImage && contentImage.parentNode) {
-            contentImage.parentNode.style.display = "block";
-            if (imgSrc) {
-                contentImage.src = imgSrc;
-                contentImage.style.display = "block";
-            } else {
-                contentImage.style.display = "none";
-            }
-            contentImage.alt = current.title || "News segment image";
+        contentImage.alt = current.title || "News image";
+    }
+
+    if (contentVideoWrapper && contentVideo) {
+        if (vidSrc) {
+            contentVideo.src = vidSrc;
+            contentVideoWrapper.classList.remove("hidden");
+        } else {
+            contentVideo.removeAttribute("src");
+            contentVideo.load();
+            contentVideoWrapper.classList.add("hidden");
         }
     }
 
     if (contentDescription) contentDescription.innerHTML = current.description || "";
-    if (bylineDate) bylineDate.textContent = `Issue Date: ${current.date || new Date().toISOString().split("T")[0]}`;
+
+    if (bylineDate) {
+        const metaItems = [
+            current.date ? `📅 ${current.date}` : "",
+            current.time ? `🕒 ${current.time}` : "",
+            current.district ? `📍 ${current.district}` : ""
+        ].filter(Boolean);
+
+        bylineDate.innerHTML = metaItems.length > 0
+            ? metaItems.map(item => `<span class="byline-meta-item">${item}</span>`).join("")
+            : `<span class="byline-meta-item">Daily Issue</span>`;
+    }
+
     if (bylineAuthor) bylineAuthor.textContent = current.author || "Question TV News Desk";
     if (bylineCategory) bylineCategory.textContent = `Category: ${current.category || selectedCategory}`;
-    if (metaBadge) metaBadge.textContent = liveVideoUrl ? "LIVE BROADCAST FEED" : `DAILY EDITION • STORY ${num}`;
+    if (metaBadge) metaBadge.textContent = current.district ? `DAILY EDITION • ${current.district.toUpperCase()}` : "DAILY EDITION";
 
     updateButtonStates();
     loadRecommendedSidebar(current.category || "National", current.id || 0);
@@ -1049,10 +1122,10 @@ function displayCurrentQuestion() {
 if (previousDayButton) {
     previousDayButton.addEventListener("click", function () {
         viewingPreviousMonth = false;
-        
+
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split("T")[0];
+        const yesterdayStr = getLocalDateString(yesterday);
 
         if (currentDayButtonNav) currentDayButtonNav.classList.remove("active");
         if (previousMonthButton) previousMonthButton.classList.remove("active");
@@ -1074,7 +1147,7 @@ if (previousMonthButton) {
         try {
             const now = new Date();
             let year = now.getFullYear();
-            let month = now.getMonth(); 
+            let month = now.getMonth();
 
             month -= 1;
             if (month < 0) {
@@ -1082,7 +1155,7 @@ if (previousMonthButton) {
                 year -= 1;
             }
 
-            const formattedMonth = String(month + 1).padStart(2, '0');
+            const formattedMonth = String(month + 1).padStart(2, "0");
             const prevYearMonth = `${year}-${formattedMonth}`;
 
             const response = await fetch(`${PREVIOUS_MONTH_API_URL}?target_month=${prevYearMonth}`);
@@ -1090,10 +1163,10 @@ if (previousMonthButton) {
 
             const rawData = await response.json();
             previousQuestions = deduplicateQuestions(rawData);
-            
+
             viewingPreviousMonth = true;
-            selectedCategory = "All"; 
-            
+            selectedCategory = "All";
+
             if (categoryPills) {
                 document.querySelectorAll(".cat-pill").forEach(p => {
                     if (p.getAttribute("data-category") === "All") {
@@ -1133,7 +1206,7 @@ function resetToCurrentDay() {
     if (currentDayButtonNav) currentDayButtonNav.classList.add("active");
     if (previousDayButton) previousDayButton.classList.remove("active");
     if (previousMonthButton) previousMonthButton.classList.remove("active");
-    if (sectionTitle) sectionTitle.textContent = "STORY READER & LIVE BROADCAST";
+    if (sectionTitle) sectionTitle.textContent = "STORY READER";
     if (currentDayButton) currentDayButton.classList.add("hidden");
 
     const headingEl = document.getElementById("highlightsHeading") || document.querySelector(".news-grid-section h2");
@@ -1148,9 +1221,10 @@ if (currentDayButtonNav) currentDayButtonNav.addEventListener("click", resetToCu
 if (addQuestionForm) {
     addQuestionForm.addEventListener("submit", async function (e) {
         e.preventDefault();
-        
+
         let finalImage = qImageInput ? qImageInput.value.trim() : "";
-        
+        let finalVideo = qVideoInput ? qVideoInput.value.trim() : "";
+
         if (qImageFileInput && qImageFileInput.files.length > 0) {
             try {
                 finalImage = await readFileAsBase64(qImageFileInput.files[0]);
@@ -1159,16 +1233,26 @@ if (addQuestionForm) {
                 return;
             }
         }
-        
+
+        if (qVideoFileInput && qVideoFileInput.files.length > 0) {
+            try {
+                finalVideo = await readFileAsBase64(qVideoFileInput.files[0]);
+            } catch (videoErr) {
+                showToast("Error processing laptop video file.", "error");
+                return;
+            }
+        }
+
         const payload = {
-            date: document.getElementById("qDate").value || new Date().toISOString().split("T")[0],
-            question_number: parseInt(document.getElementById("qNumber").value, 10) || 1,
-            title: document.getElementById("qTitle").value || "Untitled News",
-            author: document.getElementById("qAuthor") ? document.getElementById("qAuthor").value : "Question TV News Desk",
-            category: document.getElementById("qCategory").value || "National",
-            language: document.getElementById("qLanguage").value || selectedLanguage,
+            date: qDateInput && qDateInput.value ? qDateInput.value : getLocalDateString(),
+            district: qDistrictInput && qDistrictInput.value.trim() ? qDistrictInput.value.trim() : "General",
+            time: qTimeInput && qTimeInput.value ? qTimeInput.value : getCurrentTimeString(),
+            title: qTitleInput && qTitleInput.value.trim() ? qTitleInput.value.trim() : "Untitled News",
+            author: qAuthorInput && qAuthorInput.value.trim() ? qAuthorInput.value.trim() : "Question TV News Desk",
+            category: qCategoryInput ? qCategoryInput.value : "National",
+            language: qLanguageInput ? qLanguageInput.value : selectedLanguage,
             image: finalImage,
-            live_video: qLiveVideoInput ? qLiveVideoInput.value.trim() : "",
+            video: finalVideo,
             description: richEditor ? richEditor.innerHTML : ""
         };
 
@@ -1181,20 +1265,22 @@ if (addQuestionForm) {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || "Failed to create news segment");
+                throw new Error(errorData.detail || "Failed to publish news");
             }
 
-            showToast("News segment published/updated successfully!", "success");
+            showToast("News published successfully!", "success");
             addQuestionForm.reset();
             if (qImageInput) qImageInput.value = "";
+            if (qVideoInput) qVideoInput.value = "";
             if (richEditor) richEditor.innerHTML = "";
-            if (qDateInput) qDateInput.value = new Date().toISOString().split("T")[0];
+            autoSyncTime = true;
+            syncLiveDateAndTime();
             if (qLanguageInput) qLanguageInput.value = selectedLanguage;
             if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
             if (imagePreview) imagePreview.src = "";
-            
+            updateVideoPreview("");
+
             await loadQuestions(currentSelectedDate);
-            await fetchNextQuestionNumber();
         } catch (error) {
             console.error("Publishing Error:", error);
             showToast(`Failed to publish: ${error.message}`, "error");
@@ -1210,13 +1296,12 @@ if (deleteQuestionButton) {
 
         try {
             const response = await fetch(`${API_URL}/${currentQuestion.id}`, { method: "DELETE" });
-            if (!response.ok) throw new Error("Failed to delete segment");
-            showToast("Segment removed successfully!", "success");
+            if (!response.ok) throw new Error("Failed to delete news");
+            showToast("News removed successfully!", "success");
             await loadQuestions(currentSelectedDate);
-            await fetchNextQuestionNumber();
             if (editionSection) editionSection.classList.add("hidden");
         } catch (error) {
-            showToast("Failed to remove news segment.", "error");
+            showToast("Failed to remove news.", "error");
         }
     });
 }

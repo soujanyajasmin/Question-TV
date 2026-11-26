@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="te">
 
 <head>
     <meta charset="UTF-8">
@@ -24,12 +24,12 @@
             <div class="issue-details">
                 <span id="headerDate">DATE: --/--/----</span> <span class="top-divider">|</span> <span>LIVE DIGITAL EDITION</span>
             </div>
-            
+
             <div class="top-bar-controls">
                 <div class="language-controls" id="langControls">
-                    <button class="btn btn-outline btn-sm lang-btn active" data-lang="en">English</button>
+                    <button class="btn btn-outline btn-sm lang-btn" data-lang="en">English</button>
                     <button class="btn btn-outline btn-sm lang-btn" data-lang="hi">हिन्दी</button>
-                    <button class="btn btn-outline btn-sm lang-btn" data-lang="te">తెలుగు</button>
+                    <button class="btn btn-outline btn-sm lang-btn active" data-lang="te">తెలుగు</button>
                 </div>
 
                 <div class="top-search-box">
@@ -145,7 +145,6 @@
                         <div class="pricing-price vip-accent">$4.99 <span class="pricing-period">/ month</span></div>
                         <ul class="pricing-features">
                             <li>⭐ Unlimited access to all Premium stories</li>
-                            <li>⭐ Uninterrupted live video broadcast feeds</li>
                             <li>⭐ Zero ad experience &amp; priority news alerts</li>
                             <li>⭐ Full access to historical monthly archives</li>
                         </ul>
@@ -159,7 +158,7 @@
         <section class="current-section paper-sheet hidden" id="editionSection">
             <div class="section-header">
                 <div>
-                    <h2 id="sectionTitle" class="edition-title">STORY READER & LIVE BROADCAST</h2>
+                    <h2 id="sectionTitle" class="edition-title">STORY READER</h2>
                 </div>
                 <button id="currentDayButton" class="btn btn-outline current-day-button hidden">Return to Today</button>
             </div>
@@ -168,7 +167,7 @@
                 <!-- LEFT COLUMN -->
                 <article class="newspaper-article" id="articleCard" style="margin-bottom: 0;">
                     <div class="article-meta">
-                        <span class="meta-tag" id="metaBadge">LIVE BROADCAST</span>
+                        <span class="meta-tag" id="metaBadge">DAILY EDITION</span>
                         <div class="article-meta-right">
                             <span id="viewCountBadge" class="view-count-badge">👁️ 0 Views</span>
                         </div>
@@ -177,16 +176,21 @@
                     <h1 id="contentHeading" class="article-headline">Loading News Headline...</h1>
 
                     <div class="byline-bar">
-                        <span>Published by <strong id="bylineAuthor">Question TV News Desk</strong></span>
-                        <span class="divider">•</span>
-                        <span id="bylineDate">Daily Issue</span>
-                        <span class="divider">•</span>
+                        <span class="byline-author">Published by <strong id="bylineAuthor">Question TV News Desk</strong></span>
+                        <div id="bylineDate" class="byline-meta-group">
+                            <span class="byline-meta-item">Daily Issue</span>
+                        </div>
                         <span id="bylineCategory" class="byline-category">Category: General</span>
                     </div>
 
                     <div class="content-image-wrapper">
-                        <img id="contentImage" src="Assets/image.png" alt="News Segment Image">
+                        <img id="contentImage" src="Assets/image.png" alt="News Story Image">
                         <div class="image-caption" id="imageCaption">Interactive Visual Coverage</div>
+                    </div>
+
+                    <div id="contentVideoWrapper" class="content-video-wrapper hidden">
+                        <video id="contentVideo" controls preload="metadata"></video>
+                        <div class="image-caption">Story Video Coverage</div>
                     </div>
 
                     <div class="article-body">
@@ -236,7 +240,7 @@
                     </div>
 
                     <div class="action-bar admin-only hidden">
-                        <button id="deleteQuestionButton" class="btn btn-danger">Remove Segment</button>
+                        <button id="deleteQuestionButton" class="btn btn-danger">Delete News</button>
                     </div>
 
                     <section class="comments-section">
@@ -262,7 +266,7 @@
 
         <!-- 3. ADMIN DASHBOARD SECTION -->
         <section class="admin-section paper-sheet admin-only hidden" id="adminDashboardSection">
-            <h3>[Admin Desk] Publish News Segment</h3>
+            <h3>[Admin Desk] Publish News</h3>
             <form id="addQuestionForm" class="add-form">
                 <div class="form-grid">
                     <div class="form-group">
@@ -270,8 +274,8 @@
                         <input type="date" id="qDate" required />
                     </div>
                     <div class="form-group">
-                        <label for="qNumber">Segment Number</label>
-                        <input type="number" id="qNumber" placeholder="e.g. 1" required />
+                        <label for="qDistrict">District</label>
+                        <input type="text" id="qDistrict" placeholder="e.g. Hyderabad, Warangal, Karimnagar" required />
                     </div>
                 </div>
 
@@ -315,7 +319,7 @@
                         <label for="qImageFile">Upload Image from Laptop</label>
                         <input type="file" id="qImageFile" accept="image/*" class="form-control" />
                         <input type="hidden" id="qImage" />
-                        
+
                         <!-- INSTANT IMAGE PREVIEW CONTAINER -->
                         <div id="imagePreviewContainer" style="margin-top: 10px; display: none;">
                             <span style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 4px;">Selected Image Preview:</span>
@@ -323,8 +327,20 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="qLiveVideo">Live Video Stream / Embed URL (Optional)</label>
-                        <input type="url" id="qLiveVideo" placeholder="https://... (.m3u8, mp4, iframe)" />
+                        <label for="qTime">Publishing Time</label>
+                        <input type="time" id="qTime" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="qVideoFile">Upload Video from Laptop</label>
+                    <input type="file" id="qVideoFile" accept="video/*" class="form-control" />
+                    <input type="hidden" id="qVideo" />
+
+                    <!-- INSTANT VIDEO PREVIEW CONTAINER -->
+                    <div id="videoPreviewContainer" style="margin-top: 10px; display: none;">
+                        <span style="font-size: 0.8rem; color: #666; display: block; margin-bottom: 4px;">Selected Video Preview:</span>
+                        <video id="videoPreview" src="" controls style="max-width: 100%; max-height: 220px; border-radius: 6px; border: 1px solid #ccc;"></video>
                     </div>
                 </div>
 
@@ -341,7 +357,7 @@
                 </div>
 
                 <div class="admin-form-actions">
-                    <button type="submit" class="btn btn-primary">Publish News Segment</button>
+                    <button type="submit" class="btn btn-primary">Publish News</button>
                     <button type="button" id="saveDraftBtn" class="btn btn-outline">Save as Draft</button>
                     <button type="button" id="loadDraftBtn" class="btn btn-outline">Load Saved Draft</button>
                 </div>

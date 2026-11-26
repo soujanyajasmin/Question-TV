@@ -9,12 +9,15 @@ router = APIRouter()
 
 class QuestionSchema(BaseModel):
     date: Optional[str] = str(date.today())
+    district: Optional[str] = ""
+    time: Optional[str] = ""
     question_number: Optional[int] = 1
     title: Optional[str] = "Untitled News"
     category: Optional[str] = "National"
     language: Optional[str] = "en"
     author: Optional[str] = "Question TV News Desk"
     image: Optional[str] = ""
+    video: Optional[str] = ""
     description: Optional[str] = ""
     live_video: Optional[str] = ""
     is_premium: Optional[bool] = False
@@ -23,6 +26,12 @@ class QuestionSchema(BaseModel):
 def ensure_columns(cursor):
     cursor.execute("PRAGMA table_info(questions)")
     columns = [column[1] for column in cursor.fetchall()]
+    if "district" not in columns:
+        cursor.execute("ALTER TABLE questions ADD COLUMN district TEXT DEFAULT ''")
+    if "time" not in columns:
+        cursor.execute("ALTER TABLE questions ADD COLUMN time TEXT DEFAULT ''")
+    if "video" not in columns:
+        cursor.execute("ALTER TABLE questions ADD COLUMN video TEXT DEFAULT ''")
     if "language" not in columns:
         cursor.execute("ALTER TABLE questions ADD COLUMN language TEXT DEFAULT 'en'")
     if "author" not in columns:
@@ -31,7 +40,7 @@ def ensure_columns(cursor):
         cursor.execute("ALTER TABLE questions ADD COLUMN live_video TEXT DEFAULT ''")
     if "is_premium" not in columns:
         cursor.execute("ALTER TABLE questions ADD COLUMN is_premium BOOLEAN DEFAULT 0")
-    
+
     cursor.execute("""
         CREATE UNIQUE INDEX IF NOT EXISTS idx_questions_date_num_lang 
         ON questions(date, question_number, language)
@@ -49,9 +58,30 @@ def normalize_language(lang: Optional[str]) -> str:
     return "en"
 
 
+def format_question_row(question) -> dict:
+    q_dict = dict(question)
+    video_val = q_dict.get("video") or q_dict.get("live_video") or ""
+    return {
+        "id": q_dict.get("id"),
+        "date": q_dict.get("date"),
+        "district": q_dict.get("district") or "",
+        "time": q_dict.get("time") or "",
+        "question_number": q_dict.get("question_number"),
+        "title": q_dict.get("title"),
+        "category": q_dict.get("category") or "National",
+        "language": normalize_language(q_dict.get("language")),
+        "author": q_dict.get("author") or "Question TV News Desk",
+        "image": q_dict.get("image", ""),
+        "video": video_val,
+        "description": q_dict.get("description", ""),
+        "live_video": q_dict.get("live_video", ""),
+        "is_premium": bool(q_dict.get("is_premium", False)),
+    }
+
+
 @router.get("/questions/next-number")
 def get_next_question_number(
-    selected_date: str = Query(...), 
+    selected_date: str = Query(...),
     language: Optional[str] = Query("en")
 ):
     lang_code = normalize_language(language)
@@ -79,7 +109,7 @@ def get_related_stories(category: str, exclude_id: int = Query(0), language: Opt
     lang_code = normalize_language(language)
 
     cursor.execute("""
-        SELECT id, date, question_number, title, category, language, author, image, description, live_video, is_premium
+        SELECT id, date, district, time, question_number, title, category, language, author, image, video, description, live_video, is_premium
         FROM questions
         WHERE category = ? AND language = ? AND id != ?
         ORDER BY id DESC
@@ -89,7 +119,7 @@ def get_related_stories(category: str, exclude_id: int = Query(0), language: Opt
 
     if not rows:
         cursor.execute("""
-            SELECT id, date, question_number, title, category, language, author, image, description, live_video, is_premium
+            SELECT id, date, district, time, question_number, title, category, language, author, image, video, description, live_video, is_premium
             FROM questions
             WHERE language = ? AND id != ?
             ORDER BY id DESC
@@ -98,7 +128,7 @@ def get_related_stories(category: str, exclude_id: int = Query(0), language: Opt
         rows = cursor.fetchall()
 
     connection.close()
-    return [dict(row) for row in rows]
+    return [format_question_row(row) for row in rows]
 
 
 @router.get("/questions")
@@ -111,14 +141,14 @@ def get_questions(selected_date: Optional[str] = Query(None)):
 
     cursor.execute("""
         SELECT
-            id, date, question_number, title, category, language, author, image, description, live_video, is_premium
+            id, date, district, time, question_number, title, category, language, author, image, video, description, live_video, is_premium
         FROM questions
         WHERE date = ?
         ORDER BY question_number ASC
     """, (target_date,))
 
     questions = cursor.fetchall()
-    
+
     if not questions and not selected_date:
         cursor.execute("""
             SELECT DISTINCT date FROM questions ORDER BY date DESC LIMIT 1
@@ -128,7 +158,7 @@ def get_questions(selected_date: Optional[str] = Query(None)):
             target_date = latest_date_row["date"]
             cursor.execute("""
                 SELECT
-                    id, date, question_number, title, category, language, author, image, description, live_video, is_premium
+                    id, date, district, time, question_number, title, category, language, author, image, video, description, live_video, is_premium
                 FROM questions
                 WHERE date = ?
                 ORDER BY question_number ASC
@@ -137,24 +167,7 @@ def get_questions(selected_date: Optional[str] = Query(None)):
 
     connection.close()
 
-    result = []
-    for question in questions:
-        q_dict = dict(question)
-        result.append({
-            "id": q_dict.get("id"),
-            "date": q_dict.get("date"),
-            "question_number": q_dict.get("question_number"),
-            "title": q_dict.get("title"),
-            "category": q_dict.get("category") or "National",
-            "language": normalize_language(q_dict.get("language")),
-            "author": q_dict.get("author") or "Question TV News Desk",
-            "image": q_dict.get("image", ""),
-            "description": q_dict.get("description", ""),
-            "live_video": q_dict.get("live_video", ""),
-            "is_premium": bool(q_dict.get("is_premium", False))
-        })
-
-    return result
+    return [format_question_row(question) for question in questions]
 
 
 @router.get("/questions/previous-month")
@@ -171,7 +184,7 @@ def get_previous_month_questions(target_month: Optional[str] = Query(None)):
 
     cursor.execute("""
         SELECT
-            id, date, question_number, title, category, language, author, image, description, live_video, is_premium
+            id, date, district, time, question_number, title, category, language, author, image, video, description, live_video, is_premium
         FROM questions
         WHERE date LIKE ?
         ORDER BY date DESC, question_number ASC
@@ -180,24 +193,7 @@ def get_previous_month_questions(target_month: Optional[str] = Query(None)):
     questions = cursor.fetchall()
     connection.close()
 
-    result = []
-    for question in questions:
-        q_dict = dict(question)
-        result.append({
-            "id": q_dict.get("id"),
-            "date": q_dict.get("date"),
-            "question_number": q_dict.get("question_number"),
-            "title": q_dict.get("title"),
-            "category": q_dict.get("category") or "National",
-            "language": normalize_language(q_dict.get("language")),
-            "author": q_dict.get("author") or "Question TV News Desk",
-            "image": q_dict.get("image", ""),
-            "description": q_dict.get("description", ""),
-            "live_video": q_dict.get("live_video", ""),
-            "is_premium": bool(q_dict.get("is_premium", False))
-        })
-
-    return result
+    return [format_question_row(question) for question in questions]
 
 
 @router.post("/questions")
@@ -207,20 +203,38 @@ def create_question(payload: QuestionSchema):
     ensure_columns(cursor)
 
     lang_code = normalize_language(payload.language)
+    video_val = payload.video or payload.live_video or ""
 
     try:
         cursor.execute("""
-            INSERT INTO questions (date, question_number, title, category, language, author, image, description, live_video, is_premium)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO questions (date, district, time, question_number, title, category, language, author, image, video, description, live_video, is_premium)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(date, question_number, language) DO UPDATE SET
+                district = EXCLUDED.district,
+                time = EXCLUDED.time,
                 title = EXCLUDED.title,
                 category = EXCLUDED.category,
                 author = EXCLUDED.author,
                 image = EXCLUDED.image,
+                video = EXCLUDED.video,
                 description = EXCLUDED.description,
                 live_video = EXCLUDED.live_video,
                 is_premium = EXCLUDED.is_premium
-        """, (payload.date, payload.question_number, payload.title, payload.category, lang_code, payload.author, payload.image, payload.description, payload.live_video, 1 if payload.is_premium else 0))
+        """, (
+            payload.date,
+            payload.district,
+            payload.time,
+            payload.question_number,
+            payload.title,
+            payload.category,
+            lang_code,
+            payload.author,
+            payload.image,
+            video_val,
+            payload.description,
+            payload.live_video,
+            1 if payload.is_premium else 0,
+        ))
 
         connection.commit()
         new_id = cursor.lastrowid
