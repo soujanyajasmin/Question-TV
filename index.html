@@ -52,11 +52,13 @@
         <div class="masthead">
             <a href="index.html" class="logo-link" title="Return to Home">
                 <div class="logo">
-                    <img src="Assets/image.png" alt="Question TV Logo" class="brand-logo-img">
-                    <h1>QUESTION TV</h1>
+                    <img id="defaultLogoImg" src="Assets/image.png" alt="Question TV Logo" class="brand-logo-img">
+                    <img id="teluguLogoImg" src="Assets/qtv-telugu.png" alt="క్వశ్చన్ టీవీ లోగో" class="brand-logo-img hidden">
+                    <img id="hindiLogoImg" src="Assets/qtv-hindi.png" alt="क्वेश्चन टीवी लोगो" class="brand-logo-img hidden">
+                    <h1 id="mastheadTitle">QUESTION TV</h1>
                 </div>
             </a>
-            <p class="tagline">The Interactive Daily Digital News Portal</p>
+            <p id="mastheadTagline" class="tagline">The Interactive Daily Digital News Portal</p>
         </div>
 
         <!-- INFINITE CONTINUOUS TICKER  -->
@@ -195,38 +197,6 @@
 
                     <div class="article-body">
                         <div id="contentDescription" class="article-text">News report text and detailed coverage will display here.</div>
-                    </div>
-
-                    <div class="article-reader-toolbar">
-                        <div class="reader-control-card">
-                            <div class="control-header">
-                                <span class="control-label">Text Size</span>
-                            </div>
-                            <div class="control-button-group resizer-group">
-                                <button id="fontSizeDec" class="toolbar-btn resizer-btn-equal" title="Decrease Font Size">A −</button>
-                                <button id="fontSizeReset" class="toolbar-btn resizer-btn-equal active" title="Reset Font Size">100%</button>
-                                <button id="fontSizeInc" class="toolbar-btn resizer-btn-equal" title="Increase Font Size">A +</button>
-                            </div>
-                        </div>
-
-                        <div class="reader-control-card">
-                            <div class="control-header">
-                                <span class="control-label">Audio Reader</span>
-                            </div>
-                            <div class="control-button-group">
-                                <button id="playAudioBtn" class="toolbar-btn play-btn" title="Play Audio">▶ Play</button>
-                                <button id="pauseAudioBtn" class="toolbar-btn" title="Pause Audio">⏸ Pause</button>
-                                <button id="stopAudioBtn" class="toolbar-btn" title="Stop Audio">⏹ Stop</button>
-                                <div class="speed-dropdown-wrapper">
-                                    <select id="speechSpeed" class="toolbar-select" title="Playback Speed">
-                                        <option value="0.75">0.75x</option>
-                                        <option value="1" selected>1.0x</option>
-                                        <option value="1.25">1.25x</option>
-                                        <option value="1.5">1.5x</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="action-notification-area">

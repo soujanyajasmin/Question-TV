@@ -18,7 +18,6 @@ let viewingPreviousMonth = false;
 let currentSelectedDate = getLocalDateString();
 let isAdmin = localStorage.getItem("isAdmin") === "true";
 let searchQuery = "";
-let articleFontSize = 1.15;
 let statusTimeout;
 let autoSyncTime = true;
 
@@ -145,13 +144,11 @@ function initApp() {
     setupAuthEventListeners();
     setupUserInteractionButtons();
     setupSavedStoriesModal();
-    setupTextResizing();
     setupSearchAndCategory();
     setupLanguageSelector();
     setupCommentsSystem();
     setupRichTextEditor();
     setupDraftsSystem();
-    setupAudioSpeechControls();
     setupPricingNavigation();
     setupMediaPreviewListeners();
     updateSavedCount();
@@ -261,6 +258,55 @@ function resetToMainNewsGrid() {
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function updateMastheadForLanguage(lang) {
+    const defaultLogo = document.getElementById("defaultLogoImg");
+    const teluguLogo = document.getElementById("teluguLogoImg");
+    const hindiLogo = document.getElementById("hindiLogoImg");
+    const mastheadTitle = document.getElementById("mastheadTitle");
+    const taglineEl = document.getElementById("mastheadTagline");
+
+    if (lang === "te") {
+        if (defaultLogo) defaultLogo.classList.add("hidden");
+        if (teluguLogo) teluguLogo.classList.remove("hidden");
+        if (hindiLogo) hindiLogo.classList.add("hidden");
+
+        if (mastheadTitle) {
+            mastheadTitle.textContent = "క్వశ్చన్ టీవీ";
+            mastheadTitle.classList.add("telugu-text");
+            mastheadTitle.classList.remove("hindi-text");
+        }
+        if (taglineEl) {
+            taglineEl.textContent = "నిరంతర ఇంటరాక్టివ్ డిజిటల్ దినపత్రిక";
+        }
+    } else if (lang === "hi") {
+        if (defaultLogo) defaultLogo.classList.add("hidden");
+        if (teluguLogo) teluguLogo.classList.add("hidden");
+        if (hindiLogo) hindiLogo.classList.remove("hidden");
+
+        if (mastheadTitle) {
+            mastheadTitle.textContent = "क्वेश्चन टीवी";
+            mastheadTitle.classList.add("hindi-text");
+            mastheadTitle.classList.remove("telugu-text");
+        }
+        if (taglineEl) {
+            taglineEl.textContent = "दैनिक डिजिटल समाचार पोर्टल";
+        }
+    } else {
+        if (defaultLogo) defaultLogo.classList.remove("hidden");
+        if (teluguLogo) teluguLogo.classList.add("hidden");
+        if (hindiLogo) hindiLogo.classList.add("hidden");
+
+        if (mastheadTitle) {
+            mastheadTitle.textContent = "QUESTION TV";
+            mastheadTitle.classList.remove("telugu-text");
+            mastheadTitle.classList.remove("hindi-text");
+        }
+        if (taglineEl) {
+            taglineEl.textContent = "The Interactive Daily Digital News Portal";
+        }
+    }
+}
+
 function syncUIWithSavedPreferences() {
     if (langControls) {
         document.querySelectorAll(".lang-btn").forEach(btn => {
@@ -285,6 +331,8 @@ function syncUIWithSavedPreferences() {
     if (qLanguageInput) {
         qLanguageInput.value = selectedLanguage;
     }
+
+    updateMastheadForLanguage(selectedLanguage);
 }
 
 function setupLanguageSelector() {
@@ -304,6 +352,7 @@ function setupLanguageSelector() {
                     qLanguageInput.value = lang;
                 }
 
+                updateMastheadForLanguage(lang);
                 showToast(`Switching language to ${getLanguageName(lang)}...`, "info");
                 applyFilters();
             }
@@ -361,33 +410,6 @@ function initTheme() {
             localStorage.setItem("theme", isDark ? "dark" : "light");
             newBtn.textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
         });
-    }
-}
-
-function setupTextResizing() {
-    const decBtn = document.getElementById("fontSizeDec");
-    const resetBtn = document.getElementById("fontSizeReset");
-    const incBtn = document.getElementById("fontSizeInc");
-
-    if (decBtn) decBtn.addEventListener("click", () => adjustFontSize(-0.1, decBtn));
-    if (resetBtn) resetBtn.addEventListener("click", () => setFontSize(1.15, resetBtn));
-    if (incBtn) incBtn.addEventListener("click", () => adjustFontSize(0.1, incBtn));
-}
-
-function adjustFontSize(delta, activeBtn) {
-    articleFontSize = Math.min(Math.max(articleFontSize + delta, 0.85), 1.75);
-    setFontSize(articleFontSize, activeBtn);
-}
-
-function setFontSize(size, activeBtn) {
-    articleFontSize = size;
-    if (contentDescription) contentDescription.style.fontSize = `${articleFontSize}rem`;
-
-    document.querySelectorAll(".resizer-btn-equal").forEach(btn => btn.classList.remove("active"));
-    if (activeBtn) activeBtn.classList.add("active");
-    else {
-        const resetBtn = document.getElementById("fontSizeReset");
-        if (resetBtn && size === 1.15) resetBtn.classList.add("active");
     }
 }
 
@@ -637,53 +659,6 @@ function setupUserInteractionButtons() {
             }).catch(() => {
                 prompt("Copy this story link:", shareUrl);
             });
-        });
-    }
-}
-
-function setupAudioSpeechControls() {
-    const playBtn = document.getElementById("playAudioBtn");
-    const pauseBtn = document.getElementById("pauseAudioBtn");
-    const stopBtn = document.getElementById("stopAudioBtn");
-    const speedSelect = document.getElementById("speechSpeed");
-
-    if (playBtn) {
-        playBtn.addEventListener("click", () => {
-            const text = contentDescription ? contentDescription.innerText : "";
-            if (!text) return;
-
-            if (window.speechSynthesis.paused) {
-                window.speechSynthesis.resume();
-                showToast("Resumed audio playback", "info");
-                return;
-            }
-
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-
-            if (selectedLanguage === "te") utterance.lang = "te-IN";
-            else if (selectedLanguage === "hi") utterance.lang = "hi-IN";
-            else utterance.lang = "en-US";
-
-            if (speedSelect) utterance.rate = parseFloat(speedSelect.value);
-            window.speechSynthesis.speak(utterance);
-            showToast("Playing story audio...", "info");
-        });
-    }
-
-    if (pauseBtn) {
-        pauseBtn.addEventListener("click", () => {
-            if (window.speechSynthesis.speaking) {
-                window.speechSynthesis.pause();
-                showToast("Audio paused", "info");
-            }
-        });
-    }
-
-    if (stopBtn) {
-        stopBtn.addEventListener("click", () => {
-            window.speechSynthesis.cancel();
-            showToast("Audio stopped", "info");
         });
     }
 }
